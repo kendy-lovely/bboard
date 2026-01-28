@@ -11,14 +11,18 @@
 
 .logreg {
     display:grid;
+    width:100%;
     grid-template-columns:1fr+1fr;
     grid-template-rows: 1fr+0.2fr;
+    place-items: center;
     column-gap:100px;
 }
 div form {
     display:flex;
     flex-direction:column;
     gap:10px;
+    justify-self: center;
+    align-self: center;
 }
 form label {
     margin-left:auto;
@@ -54,4 +58,15 @@ nav {
 
 .link-style-button:hover {
     color: darkblue;
+}
+
+@media screen and (max-width: 1024px) {
+    .logreg {
+        grid-auto-flow: column;
+        grid-template-rows:1fr+1fr;
+        grid-template-columns: 1fr;
+        place-items: center;
+        column-gap:20px;
+        row-gap: 100px;
+    }
 }
