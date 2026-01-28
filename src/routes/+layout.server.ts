@@ -1,7 +1,7 @@
 // src/routes/+layout.server.ts
 import type { LayoutServerLoad } from './$types'
 
-export const load: LayoutServerLoad = async ({ locals: { safeGetSession, supabase } }) => {
+export const load: LayoutServerLoad = async ({ locals: { safeGetSession, supabase }, cookies }) => {
     const { session, user } = await safeGetSession()
     const { data } = await supabase
         .from('users')
@@ -11,7 +11,8 @@ export const load: LayoutServerLoad = async ({ locals: { safeGetSession, supabas
 
     return {
         session,
-        user,   
+        user,
+        cookies: cookies.getAll(),
         username: data?.username ?? "PLACEHOLDER"
     }
 }

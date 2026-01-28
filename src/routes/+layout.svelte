@@ -1,13 +1,14 @@
 <script lang="ts">
 	import '../style.css';
 	import favicon from '$lib/assets/favicon.svg';
+	import type { Snippet } from 'svelte';
+	import type { ActionData, PageData } from './$types'
 	import { invalidate, goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
 
-	let { data, children } = $props();
+	let { children, data, form }: { children: Snippet, data: PageData, form: ActionData } = $props();
 	let { supabase, session, username } = $derived(data);
-	let cantLogOut = $state(false);
 	
 	onMount(() => {
 		const { data } = supabase.auth.onAuthStateChange((event, _session) => {
@@ -32,8 +33,8 @@
 				return;
 			}}><p>hi {username} ! <button class="link-style-button" formaction="/logout">logout</button></p>
 		</form>
+		{#if form?.error}<p>{form?.message}</p>{/if}
 		{/if}
 	</nav>
 	{@render children()}
-	{#if cantLogOut}<p>whoops sorry cant log out : p</p>{/if}
 </div>
