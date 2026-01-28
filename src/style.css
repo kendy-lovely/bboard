@@ -1,0 +1,57 @@
+.main {
+    display:flex;
+    flex-direction:column;
+    width:100%;
+    border:solid+2px;
+    justify-content: center;
+    align-items: center;
+    padding-top:50px;
+    padding-bottom:50px;
+}
+
+.logreg {
+    display:grid;
+    grid-template-columns:1fr+1fr;
+    grid-template-rows: 1fr+0.2fr;
+    column-gap:100px;
+}
+div form {
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+form label {
+    margin-left:auto;
+}
+.outer {
+    display:flex;
+    flex-direction:column;
+    height:50vh;
+    min-width:50%;
+    max-width:fit-content;
+    margin:auto;
+    align-items: center;
+    gap:15px;
+    margin-top:5vh;
+}
+nav {
+    display:flex;
+    flex-direction: column;
+    align-items: center;
+}
+.link-style-button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    cursor: pointer;
+    outline: inherit;
+    color: blue;
+    text-decoration: underline;
+    display: inline;
+}
+
+.link-style-button:hover {
+    color: darkblue;
+}
