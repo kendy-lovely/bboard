@@ -1,26 +1,21 @@
 import type { PageServerLoad, Actions } from './$types';
-import type { User } from '$lib/types';
 
-export const load = (async ({ locals: { supabase, safeGetSession } }) => {
+export const load = (async ({ params, locals: { supabase, safeGetSession} }) => {
+    let ownPage = false;
     const { session } = await safeGetSession();
 
     const userData = await supabase
-        .from("users")
-        .select<'users', User>();
-    if (userData.error) {
-        console.log(userData.error.message);
-        return { users: [], posts: []};
-    }
-    const users = userData.data.toSorted((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
-    const sessionUser = users.find(user => user.userID === session?.user.id);
-    
+        .from('users')
+        .select()
+    if (userData.error) return { error: true, message: userData.error.message}
+    const pageUser = userData.data.find(user => user.username === params.username);
+    const sessionUser = userData.data.find(user => user.userID === session?.user.id);
+
     const postData = await supabase
-        .from("posts")
-        .select();
-    if (postData.error) {
-        console.log(postData.error.message);
-        return { users: [], posts: []};
-    }
+        .from('posts')
+        .select()
+        .eq('author', pageUser?.userID);
+    if (postData.error) return { error: true, message: postData.error.message}
 
     const posts = postData.data
         .map((post) => {
@@ -36,35 +31,22 @@ export const load = (async ({ locals: { supabase, safeGetSession } }) => {
             return { 
                 ...post, 
                 readMore,
-                authorUsername: users.find(user => user.userID === post.author)?.username, 
+                authorUsername: pageUser?.username, 
                 deletable
             };
         })
         .filter(p => p.authorUsername)
         .toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    
 
+    if (session?.user.id === pageUser?.userID) ownPage = true;
     return { 
-        users,
+        pageUser, 
         posts,
-        sessionUser: sessionUser
+        ownPage 
     };
 }) satisfies PageServerLoad;
 
 export const actions = {
-	post: async ({ request, locals: { safeGetSession, supabase }}) => {
-        const { session } = await safeGetSession();
-        const form = await request.formData();
-        const text = form.get('text') as string;
-        console.log(text);
-        const { error } = await supabase
-            .from('posts')
-            .insert([{ author: session?.user.id, text }]);
-
-        if (error) return { error: true, message: error.message};
-
-        return { success: true, message: "successfully posted"};
-    },
     delete: async ({ request, locals: { safeGetSession, supabase }}) => {
         const { session } = await safeGetSession();
         const form = await request.formData();
@@ -90,4 +72,21 @@ export const actions = {
         if (error) return { error: true, message: error.message};
         return { success: true, message: "successfully deleted"};
     },
+    edit: async ({request, locals: { supabase, safeGetSession}}) => {
+        const { session } = await safeGetSession();
+        const form = await request.formData();
+        const id = form.get('id') as string;
+        const bio = form.get('bio') as string;
+
+        if (id !== session?.user.id) return { error: true, message: "not authenticated" }
+
+        const { error } = await supabase
+            .from('users')
+            .update({ bio })
+            .eq('userID', id)
+            .select();
+        if (error) return { error: true, message: error.message };
+
+        return { success: true, message: "successfully changed !"};
+    }
 } satisfies Actions;

@@ -1,38 +1,37 @@
 <script lang="ts">
-    import "../style.css";
-    import type { PageProps } from './$types'
+    import type { PageProps } from './$types';
     import { marked } from 'marked';
-    const { data, form }: PageProps = $props();
 
+    let { data, form }: PageProps = $props();
+    let editBio = $state(false);
     let posts = $state(
         // svelte-ignore state_referenced_locally
-        data.posts.map((post: any) => ({
+        data.posts?.map((post: any) => ({
             ...post,
             expanded: false
         }))
     );
 </script>
 
+{#if data?.error}{data?.message}{/if}
 <div class="main">
-    <h1>welcome to bboard</h1>
-    <p><a href="/login">click</a> to login/register</p>
-    <p>our beautiful users:</p>
-    <ul>
-        {#each data.users as user}
-            <li style="list-style-type:none;">{@html user.admin ? `<span style="color:navy">${user.username}</span>` : `<span>${user.username}</span>`}, made on {user.createdAt.split('T')[0]}</li>
-        {/each}
-    </ul>
+    {#if form?.error || form?.success}{form.message}{/if}
+    <p>this is the page of {data.pageUser.username} !!</p>
+    
+    {#if data.ownPage}<button class="link-style-button" onclick={() => editBio = !editBio}>edit bio</button>{/if}
+    {#if data.ownPage && editBio}
+    <form method="POST">
+        <input type="hidden" name="id" value={data.pageUser.userID} />
+        <label>
+            bio:
+            <textarea style="width:100%" rows=4 name="bio"></textarea>
+        </label>
+        <button class="link-style-button" formaction="?/edit">apply changes</button>
+    </form>
+    {/if}
+    {#if data.pageUser.bio}{@html marked.parse(data.pageUser.bio)}{/if}
 </div>
 <div class="main">
-    {#if form?.error || form?.success}<p>{form?.message}</p>{/if}
-    <form method="POST">
-        <label>
-            text:
-            <textarea style="width:100%" rows=4 name="text"></textarea>
-        </label>
-        <button formaction="?/post">post</button>
-    </form>
-    <div>
     {#each posts as post}
         <div class="post">
             <a href="/{post.authorUsername}">{post.authorUsername}</a>: {@html post.expanded ? marked.parse(post.text + post.readMore) : marked.parse(post.text)}
@@ -50,5 +49,4 @@
             </form>
         </div>
     {/each}
-    </div>
 </div>

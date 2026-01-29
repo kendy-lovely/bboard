@@ -13,6 +13,6 @@ export const load: LayoutServerLoad = async ({ locals: { safeGetSession, supabas
         session,
         user,
         cookies: cookies.getAll(),
-        username: data?.username ?? "PLACEHOLDER"
+        username: data?.username
     }
 }
