@@ -1,7 +1,6 @@
 <script lang="ts">
     import "../style.css";
     import type { PageProps } from './$types'
-    import { marked } from 'marked';
     const { data, form }: PageProps = $props();
 
     let posts = $state(
