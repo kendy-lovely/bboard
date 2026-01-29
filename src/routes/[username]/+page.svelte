@@ -17,7 +17,12 @@
 <div class="main">
     {#if form?.error || form?.success}{form.message}{/if}
     <p>this is the page of {data.pageUser.username} !!</p>
-    
+    <div style="width:200px;
+                aspect-ratio:1;
+                background-image:url({data.pageUser.pfp});
+                background-repeat:no-repeat;
+                background-position:center;
+                background-size:cover;"></div>
     {#if data.ownPage}<button class="link-style-button" onclick={() => (editBio = !editBio)}>edit bio</button>{/if}
     {#if data.ownPage && editBio}
     <form method="POST">

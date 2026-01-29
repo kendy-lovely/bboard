@@ -6,11 +6,15 @@
 
     let posts = $state(
         // svelte-ignore state_referenced_locally
-        data.posts.map((post: any) => ({
-            ...post,
-            expanded: false,
-            replying: false,
-        }))
+        data.posts.map((post: any) => { 
+            const pfp = data.users.find(user => user.userID === post.author)?.pfp;
+            return {
+                ...post,
+                pfp,
+                expanded: false,
+                replying: false,
+            }
+        })
     );
 
     let rootPosts = $derived(posts.filter(p => !p.parent));
@@ -26,8 +30,7 @@
             <li style="list-style-type:none;">
                 {@html user.admin ? 
                 `<span style="color:navy">${user.username}</span>` : 
-                `<span>${user.username}</span>`}
-                , made on {user.createdAt.split('T')[0]}
+                `<span>${user.username}</span>`}, made on {user.createdAt.split('T')[0]}
             </li>
         {/each}
     </ul>
@@ -44,7 +47,18 @@
     <div>
     {#each rootPosts as post}
         <div class="post">
-            <a href="/{post.authorUsername}">{post.authorUsername}</a>: 
+            <a href="/{post.authorUsername}">
+                {#if post.pfp}
+                <div style="width:35px;
+                            display:inline-block;
+                            aspect-ratio:1;
+                            background-image:url({post.pfp});
+                            background-repeat:no-repeat;
+                            background-position:center;
+                            background-size:cover;"></div>
+                {/if}
+                {post.authorUsername}
+            </a>: 
             {@html post.expanded ? 
                 setMarked.parse(post.readMore, { renderer: setRender }) : 
                 setMarked.parse(post.text, { renderer: setRender })}
@@ -80,7 +94,18 @@
             </form>
             {#each repliesByParent[post.id] ?? [] as reply}
                 <div class="reply">
-                    <a href="/{reply.authorUsername}">{reply.authorUsername}</a>: 
+                    <a href="/{reply.authorUsername}">
+                        {#if reply.pfp}
+                        <div style="width:35px;
+                                    display:inline-block;
+                                    aspect-ratio:1;
+                                    background-image:url({reply.pfp});
+                                    background-repeat:no-repeat;
+                                    background-position:center;
+                                    background-size:cover;"></div>
+                        {/if}
+                        {reply.authorUsername}
+                    </a>: 
                     {@html reply.expanded ? 
                         setMarked.parse(reply.readMore, { renderer: setRender }) : 
                         setMarked.parse(reply.text, { renderer: setRender })}

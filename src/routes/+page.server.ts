@@ -11,7 +11,7 @@ export const load = (async ({ locals: { supabase, safeGetSession } }) => {
         console.log(userData.error.message);
         return { users: [], posts: []};
     }
-    const users = userData.data.toSorted((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    const users = userData.data.toSorted((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
     const sessionUser = users.find(user => user.userID === session?.user.id);
     
     const postData = await supabase

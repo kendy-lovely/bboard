@@ -4,4 +4,6 @@ export type User = {
     email: string;
     createdAt: string;
     admin: boolean;
+    bio: string;
+    pfp: string;
 };
