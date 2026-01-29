@@ -37,7 +37,7 @@
         <div class="post">
             <a href="/{post.authorUsername}">{post.authorUsername}</a>: {@html post.expanded ? marked.parse(post.text + post.readMore) : marked.parse(post.text)}
             {#if post.readMore}
-                <button class="link-style-button" onclick={() => post.expanded = !post.expanded}>{post.expanded ? "read less" : "read more"}</button>
+                <button class="link-style-button" onclick={() => (post.expanded = !post.expanded)}>{post.expanded ? "read less" : "read more"}</button>
             {/if}
             <form method="POST">
                 <input type="hidden" name="id" value={post.id} />
