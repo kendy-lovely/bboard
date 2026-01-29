@@ -77,32 +77,20 @@ export const actions = {
         const form = await request.formData();
         const id = form.get('id') as string;
         const bio = form.get('bio') as string;
-
         const pfp = form.get('pfp') as string;
 
         if (id !== session?.user.id) return { error: true, message: "not authenticated" }
-        if (bio && pfp) {
-            const { error } = await supabase
-                .from('users')
-                .update({ bio, pfp })
-                .eq('userID', id);
-            if (error) return { error: true, message: error.message };
-        } else if (pfp) {
-            const { error } = await supabase
-                .from('users')
-                .update({ pfp })
-                .eq('userID', id);
-            if (error) return { error: true, message: error.message };
-        } else if (bio) {
-            const { error } = await supabase
-                .from('users')
-                .update({ bio })
-                .eq('userID', id);
-            if (error) return { error: true, message: error.message };
-        }
-        else {
-            return { error: true, message: "no data filled" };
-        }
+
+        const update: Record<string, string> = {};
+        if (bio) update.bio = bio;
+        if (pfp) update.pfp = pfp;
+        if (Object.keys(update).length === 0) return { error: true, message: 'no data filled' };
+
+        const { error } = await supabase
+            .from('users')
+            .update(update)
+            .eq('userID', id);
+        if (error) return { error: true, message: error.message };
 
         return { success: true, message: "successfully changed !"};
     },
