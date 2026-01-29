@@ -23,7 +23,7 @@ export const load = (async ({ params, locals: { supabase, safeGetSession} }) => 
             let deletable = false;
 
             if (post.text.length >= 256) {
-                readMore = post.text.slice(255);
+                readMore = post.text;
                 post.text = post.text.slice(0, 255);
             }
             if (sessionUser?.userID === post.author || sessionUser?.admin) deletable = true;

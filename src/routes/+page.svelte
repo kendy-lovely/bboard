@@ -1,16 +1,20 @@
 <script lang="ts">
     import "../style.css";
     import type { PageProps } from './$types'
-    import { marked } from 'marked';
+    import { setMarked, setRender } from '$lib/marked';
     const { data, form }: PageProps = $props();
 
     let posts = $state(
         // svelte-ignore state_referenced_locally
         data.posts.map((post: any) => ({
             ...post,
-            expanded: false
+            expanded: false,
+            replying: false,
         }))
     );
+
+    let rootPosts = $derived(posts.filter(p => !p.parent));
+    let repliesByParent = $derived(Object.groupBy(posts, p => p.parent));
 </script>
 
 <div class="main">
@@ -19,7 +23,12 @@
     <p>our beautiful users:</p>
     <ul>
         {#each data.users as user}
-            <li style="list-style-type:none;">{@html user.admin ? `<span style="color:navy">${user.username}</span>` : `<span>${user.username}</span>`}, made on {user.createdAt.split('T')[0]}</li>
+            <li style="list-style-type:none;">
+                {@html user.admin ? 
+                `<span style="color:navy">${user.username}</span>` : 
+                `<span>${user.username}</span>`}
+                , made on {user.createdAt.split('T')[0]}
+            </li>
         {/each}
     </ul>
 </div>
@@ -33,21 +42,71 @@
         <button formaction="?/post">post</button>
     </form>
     <div>
-    {#each posts as post}
+    {#each rootPosts as post}
         <div class="post">
-            <a href="/{post.authorUsername}">{post.authorUsername}</a>: {@html post.expanded ? marked.parse(post.text + post.readMore) : marked.parse(post.text)}
+            <a href="/{post.authorUsername}">{post.authorUsername}</a>: 
+            {@html post.expanded ? 
+                setMarked.parse(post.readMore, { renderer: setRender }) : 
+                setMarked.parse(post.text, { renderer: setRender })}
             {#if post.readMore}
-                <button class="link-style-button" onclick={() => (post.expanded = !post.expanded)}>{post.expanded ? "read less" : "read more"}</button>
+                <button class="link-style-button" 
+                        onclick={() => post.expanded = !post.expanded}
+                >{post.expanded ? "read less" : "read more"}</button>
             {/if}
             <form method="POST">
                 <input type="hidden" name="id" value={post.id} />
                 <p>
-                    {new Date(post.createdAt).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric' }).toLowerCase()}, {new Date(post.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                    {new Date(post.createdAt)
+                        .toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+                        .toLowerCase()}, 
+                    {new Date(post.createdAt)
+                        .toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                     {#if post.deletable}
-                    <button style="margin-left:.5em;"class="link-style-button" formaction="?/delete">delete</button>
+                        <button style="margin-left:.5em;"
+                                class="link-style-button" 
+                                formaction="?/delete"
+                        >delete</button>
+                    {/if}
+                    <button style="margin-left:.5em;"
+                            class="link-style-button" 
+                            type="button"
+                            onclick={() => post.replying = !post.replying}
+                    >reply</button>
+                    {#if post.replying}
+                        <textarea style="width:100%" rows=4 name="text"></textarea>
+                        <button formaction="?/reply">post</button>
                     {/if}
                 </p>
             </form>
+            {#each repliesByParent[post.id] ?? [] as reply}
+                <div class="reply">
+                    <a href="/{reply.authorUsername}">{reply.authorUsername}</a>: 
+                    {@html reply.expanded ? 
+                        setMarked.parse(reply.readMore, { renderer: setRender }) : 
+                        setMarked.parse(reply.text, { renderer: setRender })}
+                    {#if reply.readMore}
+                        <button class="link-style-button" 
+                                onclick={() => reply.expanded = !reply.expanded}
+                        >{reply.expanded ? "read less" : "read more"}</button>
+                    {/if}
+                    <form method="POST">
+                        <input type="hidden" name="id" value={reply.id} />
+                        <p>
+                            {new Date(reply.createdAt)
+                                .toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+                                .toLowerCase()}, 
+                            {new Date(reply.createdAt)
+                                .toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
+                            {#if reply.deletable}
+                                <button style="margin-left:.5em;"
+                                        class="link-style-button" 
+                                        formaction="?/delete"
+                                >delete</button>
+                            {/if}
+                        </p>
+                    </form>
+                </div>
+            {/each}
         </div>
     {/each}
     </div>

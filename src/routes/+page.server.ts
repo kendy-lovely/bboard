@@ -28,7 +28,7 @@ export const load = (async ({ locals: { supabase, safeGetSession } }) => {
             let deletable = false;
 
             if (post.text.length >= 256) {
-                readMore = post.text.slice(255);
+                readMore = post.text;
                 post.text = post.text.slice(0, 255);
             }
             if (sessionUser?.userID === post.author || sessionUser?.admin) deletable = true;
@@ -56,10 +56,24 @@ export const actions = {
         const { session } = await safeGetSession();
         const form = await request.formData();
         const text = form.get('text') as string;
-        console.log(text);
+
         const { error } = await supabase
             .from('posts')
             .insert([{ author: session?.user.id, text }]);
+
+        if (error) return { error: true, message: error.message};
+
+        return { success: true, message: "successfully posted"};
+    },
+    reply: async ({ request, locals: { safeGetSession, supabase }}) => {
+        const { session } = await safeGetSession();
+        const form = await request.formData();
+        const text = form.get('text') as string;
+        const parent = form.get('id') as string;
+
+        const { error } = await supabase
+            .from('posts')
+            .insert([{ author: session?.user.id, text, parent }]);
 
         if (error) return { error: true, message: error.message};
 
@@ -79,7 +93,7 @@ export const actions = {
             .eq('id', form.get('id') as string)
             .single();
 
-        if (post.error) return { error: true, message: post.error.message};
+        if (post.error) return { error: true, message: post.error.message };
         if (post.data.author !== session?.user.id && !sessionUser?.data.admin) { 
             return { error: true, message: "not authenticated" } 
         };
@@ -89,5 +103,5 @@ export const actions = {
                 .eq('id', post.data.id);
         if (error) return { error: true, message: error.message};
         return { success: true, message: "successfully deleted"};
-    },
+    }
 } satisfies Actions;

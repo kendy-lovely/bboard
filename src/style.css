@@ -70,6 +70,16 @@ nav {
     margin-top:5px;
     margin-bottom:5px;
 }
+.reply {
+    width:75%;
+    height:fit-content;
+    padding:5px;
+    border:solid+2px;
+    text-align:left;
+    margin-top:5px;
+    margin-bottom:5px;
+    margin-left:10px;
+}
 @media screen and (max-width: 1024px) {
     .main {
         width: 95vw;
