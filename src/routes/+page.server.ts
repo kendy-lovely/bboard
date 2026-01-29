@@ -1,7 +1,5 @@
 import type { PageServerLoad, Actions } from './$types';
 import type { User } from '$lib/types';
-import { marked } from 'marked';
-import DOMPurify from 'isomorphic-dompurify';
 
 export const load = (async ({ locals: { supabase, safeGetSession } }) => {
     const { session } = await safeGetSession();
@@ -30,12 +28,10 @@ export const load = (async ({ locals: { supabase, safeGetSession } }) => {
             let deletable = false;
 
             if (post.text.length >= 256) {
-                readMore = post.text;
+                readMore = post.text.slice(255);
                 post.text = post.text.slice(0, 255);
             }
             if (sessionUser?.userID === post.author || sessionUser?.admin) deletable = true;
-            post.text = DOMPurify.sanitize(marked.parse(post.text, { async: false }));
-            readMore = DOMPurify.sanitize(marked.parse(readMore, { async: false }));
 
             return { 
                 ...post, 
