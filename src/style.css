@@ -57,9 +57,18 @@ nav {
     display: inline;
     margin-top: -6px;
 }
-
 .link-style-button:hover {
     color: darkblue;
+}
+.post {
+    width:75%;
+    height:fit-content;
+    padding:5px;
+    margin:auto;
+    border:solid+2px;
+    text-align:left;
+    margin-top:5px;
+    margin-bottom:5px;
 }
 @media screen and (max-width: 1024px) {
     .main {
@@ -72,5 +81,8 @@ nav {
         place-items: center;
         column-gap:20px;
         row-gap: 100px;
+    }
+    .post {
+        width:95%;
     }
 }

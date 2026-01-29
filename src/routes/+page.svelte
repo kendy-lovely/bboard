@@ -4,6 +4,7 @@
     const { data, form }: PageProps = $props();
 
     let posts = $state(
+        // svelte-ignore state_referenced_locally
         data.posts.map((post: any) => ({
             ...post,
             expanded: false
@@ -33,15 +34,16 @@
     </form>
     <div>
     {#each posts as post}
-        <div style="width:75%;height:fit-content;padding:5px;margin:auto;border:solid+2px;text-align:left;margin-top:5px;margin-bottom:5px;">
-            <p>{post.authorUsername}: {post.text}</p>
+        <div class="post">
+            {post.authorUsername}: {@html post.text}
             {#if post.readMore}
-                <p>{post.expanded ? post.readMore : ""}</p>
+                <p>{@html post.expanded ? post.readMore : ""}</p>
                 <button class="link-style-button" onclick={() => post.expanded = !post.expanded}>{post.expanded ? "read less" : "read more"}</button>
             {/if}
             <form method="POST">
                 <input type="hidden" name="id" value={post.id} />
                 <p>
+                    {new Date(post.createdAt).toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric' }).toLowerCase()}, {new Date(post.createdAt).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
                     {#if post.deletable}
                     <button class="link-style-button" formaction="?/delete">delete</button>
                     {/if}

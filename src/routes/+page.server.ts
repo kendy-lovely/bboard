@@ -1,8 +1,10 @@
 import type { PageServerLoad, Actions } from './$types';
-import type { User } from '$lib/types'
+import type { User } from '$lib/types';
+import { marked } from 'marked';
 
 export const load = (async ({ locals: { supabase, safeGetSession } }) => {
     const { session } = await safeGetSession();
+
     const userData = await supabase
         .from("users")
         .select<'users', User>();
@@ -10,7 +12,8 @@ export const load = (async ({ locals: { supabase, safeGetSession } }) => {
         console.log(userData.error.message);
         return { users: [], posts: []};
     }
-    const sessionUser = userData.data.find(user => user.userID === session?.user.id);
+    const users = userData.data.toSorted((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+    const sessionUser = users.find(user => user.userID === session?.user.id);
     
     const postData = await supabase
         .from("posts")
@@ -22,40 +25,29 @@ export const load = (async ({ locals: { supabase, safeGetSession } }) => {
 
     const posts = postData.data
         .map((post) => {
-            const user = userData.data.find(user => user.userID === post.author);
             let readMore = "";
-            if ((post.text as string).length >= 128) {
-                readMore = post.text.slice(128);
-                post.text = post.text.slice(0, 127);
-            }
+            let deletable = false;
+            post.text = marked.parse(post.text);
 
-            if (sessionUser?.admin) return { 
-                ...post,
-                readMore,
-                authorUsername: user?.username ?? "", 
-                deletable: true,
-                expanded: false
-            };
-            if (session?.user.id === post.author) return { 
-                ...post, 
-                readMore,
-                authorUsername: user?.username ?? "NULL", 
-                deletable: true,
-                expanded: false
+            if (post.text.length >= 256) {
+                readMore = post.text.slice(256);
+                post.text = post.text.slice(0, 255);
             }
+            if (sessionUser?.userID === post.author || sessionUser?.admin) deletable = true;
+
             return { 
                 ...post, 
                 readMore,
-                authorUsername: user?.username ?? "NULL", 
-                deletable: false,
-                expanded: false
+                authorUsername: users.find(user => user.userID === post.author)?.username, 
+                deletable
             };
         })
-        .toSorted((a, b) => b.id - a.id);
-        console.log(posts)
+        .filter(p => p.authorUsername)
+        .toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    
 
     return { 
-        users: userData.data, 
+        users,
         posts,
         sessionUser: sessionUser
     };
