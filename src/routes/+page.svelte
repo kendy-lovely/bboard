@@ -35,7 +35,7 @@
     <div>
     {#each posts as post}
         <div class="post">
-            <a href="/{post.authorUsername}">{post.authorUsername}</a>: {@html post.expanded ? marked.parse(post.text + post.readMore) : marked.parse(post.text)}
+            <a href="/{post.authorUsername}">{post.authorUsername}</a>: {@html post.expanded ? post.readMore : post.text}
             {#if post.readMore}
                 <button class="link-style-button" onclick={() => (post.expanded = !post.expanded)}>{post.expanded ? "read less" : "read more"}</button>
             {/if}
