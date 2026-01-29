@@ -33,7 +33,7 @@
     </form>
     <div>
     {#each posts as post}
-        <div style="width:75%;height:fit-content;padding:5px;margin:auto;border:solid+2px;text-align:left;">
+        <div style="width:75%;height:fit-content;padding:5px;margin:auto;border:solid+2px;text-align:left;margin-top:5px;margin-bottom:5px;">
             <p>{post.authorUsername}: {post.text}</p>
             {#if post.readMore}
                 <p>{post.expanded ? post.readMore : ""}</p>
