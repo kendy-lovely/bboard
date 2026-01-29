@@ -2,6 +2,7 @@
     import "../style.css";
     import type { PageProps } from './$types'
     import { marked } from 'marked';
+    import DOMPurify from "dompurify";
     const { data, form }: PageProps = $props();
 
     let posts = $state(
@@ -19,7 +20,7 @@
     <p>our beautiful users:</p>
     <ul>
         {#each data.users as user}
-            <li style="list-style-type:none;">{@html user.admin ? `<span style="color:navy">${user.username}</span>` : `<span>${user.username}</span>`}, made on {user.createdAt.split('T')[0]}</li>
+            <li style="list-style-type:none;">{@html user.admin ? `<span style="color:navy">${DOMPurify.sanitize(user.username)}</span>` : `<span>${DOMPurify.sanitize(user.username)}</span>`}, made on {user.createdAt.split('T')[0]}</li>
         {/each}
     </ul>
 </div>
@@ -35,7 +36,7 @@
     <div>
     {#each posts as post}
         <div class="post">
-            <a href="/{post.authorUsername}">{post.authorUsername}</a>: {@html post.expanded ? marked.parse(post.text + post.readMore) : marked.parse(post.text)}
+            <a href="/{post.authorUsername}">{post.authorUsername}</a>: {@html post.expanded ? DOMPurify.sanitize(marked.parse(post.text + post.readMore, { async:  false })) : DOMPurify.sanitize(marked.parse(post.text, { async: false }))}
             {#if post.readMore}
                 <button class="link-style-button" onclick={() => (post.expanded = !post.expanded)}>{post.expanded ? "read less" : "read more"}</button>
             {/if}
