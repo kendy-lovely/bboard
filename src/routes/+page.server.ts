@@ -20,10 +20,39 @@ export const load = (async ({ locals: { supabase, safeGetSession } }) => {
         return { users: [], posts: []};
     }
 
-    const posts = postData.data.map((post) => {
-        const user = userData.data.find(user => user.userID === post.author);
-        return { ...post, authorUsername: user?.username ?? "NULL" }
-    }).toReversed();
+    const posts = postData.data
+        .map((post) => {
+            const user = userData.data.find(user => user.userID === post.author);
+            let readMore = "";
+            if ((post.text as string).length >= 128) {
+                readMore = post.text.slice(128);
+                post.text = post.text.slice(0, 127);
+            }
+
+            if (sessionUser?.admin) return { 
+                ...post,
+                readMore,
+                authorUsername: user?.username ?? "", 
+                deletable: true,
+                expanded: false
+            };
+            if (session?.user.id === post.author) return { 
+                ...post, 
+                readMore,
+                authorUsername: user?.username ?? "NULL", 
+                deletable: true,
+                expanded: false
+            }
+            return { 
+                ...post, 
+                readMore,
+                authorUsername: user?.username ?? "NULL", 
+                deletable: false,
+                expanded: false
+            };
+        })
+        .toSorted((a, b) => b.id - a.id);
+        console.log(posts)
 
     return { 
         users: userData.data, 
@@ -49,16 +78,21 @@ export const actions = {
     delete: async ({ request, locals: { safeGetSession, supabase }}) => {
         const { session } = await safeGetSession();
         const form = await request.formData();
+        const currentUser = await supabase
+            .from('users')
+            .select()
+            .eq('userID', session?.user.id)
+            .single();
         const post = await supabase
             .from('posts')
             .select()
             .eq('id', form.get('id') as string)
             .single();
-        if (post.error) return { error: true, message: post.error.message};
 
-        if (post.data.author !== session?.user.id) {
-            return {error: true, message: "not authenticated"}
-        }
+        if (post.error) return { error: true, message: post.error.message};
+        if (post.data.author !== session?.user.id && !currentUser?.data.admin) { 
+            return { error: true, message: "not authenticated" } 
+        };
         const { error } = await supabase
                 .from('posts')
                 .delete()

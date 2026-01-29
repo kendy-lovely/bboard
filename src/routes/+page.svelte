@@ -1,8 +1,14 @@
 <script lang="ts">
     import "../style.css";
     import type { PageProps } from './$types'
-
     const { data, form }: PageProps = $props();
+
+    let posts = $state(
+        data.posts.map((post: any) => ({
+            ...post,
+            expanded: false
+        }))
+    );
 </script>
 
 <div class="main">
@@ -26,16 +32,22 @@
         <button formaction="?/post">post</button>
     </form>
     <div>
-    {#each data.posts as post}
-        <form method="POST">
-            <input type="hidden" name="id" value={post.id} />
-            <p style=margin-bottom:-12px>
-                {post.authorUsername}: {post.text}
-                {#if data.sessionUser?.userID === post.author}
-                <button class="link-style-button" formaction="?/delete">delete</button>
-                {/if}
-            </p>
-        </form>
+    {#each posts as post}
+        <div style="width:75%;height:fit-content;padding:5px;margin:auto;border:solid+2px;text-align:left;">
+            <p>{post.authorUsername}: {post.text}</p>
+            {#if post.readMore}
+                <p>{post.expanded ? post.readMore : ""}</p>
+                <button class="link-style-button" onclick={() => post.expanded = !post.expanded}>{post.expanded ? "read less" : "read more"}</button>
+            {/if}
+            <form method="POST">
+                <input type="hidden" name="id" value={post.id} />
+                <p>
+                    {#if post.deletable}
+                    <button class="link-style-button" formaction="?/delete">delete</button>
+                    {/if}
+                </p>
+            </form>
+        </div>
     {/each}
     </div>
 </div>
