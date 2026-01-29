@@ -1,6 +1,5 @@
 <script lang="ts">
     import type { PageProps } from './$types';
-    import DOMPurify from 'dompurify';
     import { marked } from 'marked';
 
     let { data, form }: PageProps = $props();
@@ -30,12 +29,12 @@
         <button class="link-style-button" formaction="?/edit">apply changes</button>
     </form>
     {/if}
-    {#if data.pageUser.bio}{@html DOMPurify.sanitize(marked.parse(data.pageUser.bio, { async: false }))}{/if}
+    {#if data.pageUser.bio}{marked.parse(data.pageUser.bio)}{/if}
 </div>
 <div class="main">
     {#each posts as post}
         <div class="post">
-            <a href="/{post.authorUsername}">{post.authorUsername}</a>: {@html post.expanded ? DOMPurify.sanitize(marked.parse(post.text + post.readMore, { async: false })) : DOMPurify.sanitize(marked.parse(post.text, { async: false }))}
+            <a href="/{post.authorUsername}">{post.authorUsername}</a>: {post.expanded ? marked.parse(post.text + post.readMore) : marked.parse(post.text)}
             {#if post.readMore}
                 <button class="link-style-button" onclick={() => (post.expanded = !post.expanded)}>{post.expanded ? "read less" : "read more"}</button>
             {/if}
