@@ -1,5 +1,5 @@
 import type { PageServerLoad, Actions } from './$types';
-import type { User } from '$lib/types';
+import type { User, Post } from '$lib/types';
 
 export const load = (async ({ locals: { supabase, safeGetSession } }) => {
     const { session } = await safeGetSession();
@@ -22,31 +22,39 @@ export const load = (async ({ locals: { supabase, safeGetSession } }) => {
         return { users: [], posts: []};
     }
 
-    const posts = postData.data
-        .map((post) => {
-            let readMore = "";
-            let deletable = false;
+    const postMap = new Map<string, Post>();
 
-            if (post.text.length >= 256) {
-                readMore = post.text;
-                post.text = post.text.slice(0, 255);
-            }
-            if (sessionUser?.userID === post.author || sessionUser?.admin) deletable = true;
+    for (const post of postData.data) {
+        const user = users.find(user => user.userID === post.author);
 
-            return { 
-                ...post, 
-                readMore,
-                authorUsername: users.find(user => user.userID === post.author)?.username, 
-                deletable
-            };
+        postMap.set(`${post.id}`, {
+            ...post,
+            readMore: post.text.length >= 256 ? post.text : "",
+            text: post.text.slice(0, 255),
+            pfp: user?.pfp,
+            authorUsername: user?.username,
+            deletable: session?.user.id === user?.userID || sessionUser?.admin,
+            children: []
         })
-        .filter(p => p.authorUsername)
-        .toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-    
+    }
+
+    const roots: Post[] = [];
+
+    for (const post of postMap.values()) {
+        if (post.parent) {
+            postMap.get(`${post.parent}`)?.children!.push(post)
+        }
+    }
+
+    for (const post of postMap.values()) {
+        if (!post.parent) {
+            roots.push(post);
+        }
+    }
 
     return { 
         users,
-        posts,
+        posts: roots.toReversed(),
         sessionUser: sessionUser
     };
 }) satisfies PageServerLoad;
