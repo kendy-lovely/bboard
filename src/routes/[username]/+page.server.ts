@@ -57,19 +57,16 @@ export const load = (async ({ params, locals: { supabase, safeGetSession } }) =>
     }
 
     let roots: Post[] = [];
-
     for (const post of postMap.values()) {
         if (post.parent) {
             postMap.get(`${post.parent}`)?.children!.push(post)
         }
     }
-
     for (const post of postMap.values()) {
         if (!post.parent) {
             roots.push(post);
         }
     }
-
     const filterPostTree = (tree: Post[], condition: (post: Post) => boolean) => {
         return tree
             .filter(post => {
@@ -78,7 +75,6 @@ export const load = (async ({ params, locals: { supabase, safeGetSession } }) =>
                 return condition(post) || (post.children && post.children.length > 0)
             })
     }
-
     roots = filterPostTree(roots, (post) => post.author === pageUser.userID);
 
     return { 

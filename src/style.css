@@ -178,7 +178,7 @@ nav {
     background-size:cover;
     border-radius:50%;
 }
-@media screen and (max-width: 1024px) {
+@media screen and (max-width: 800px) {
     .outer {
         width: 98vw;
     }
@@ -192,5 +192,9 @@ nav {
     }
     .post > .post-content {
         width:75%;
+    }
+    .img {
+        max-width: 80%;
+        max-height: 100%;
     }
 }
