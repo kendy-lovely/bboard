@@ -103,6 +103,7 @@ nav {
     border-bottom-color: transparent;
     background-color: rgb(229, 237, 244);
     text-align:left;
+    word-break: break-all;
 }
 .post > .post-content {
     margin-left:0.5em;
