@@ -16,15 +16,8 @@
 
 <div class="main">
     <h1>welcome to bboard</h1>
-    <p><a href="/login">click</a> to login/register</p>
-    <p>our beautiful users:</p>
-    {#each data.users as user}
-        <p style="margin-bottom:-16px;">
-            {@html user.admin ? 
-            `<span style="color:navy">${user.username}</span>` : 
-            `<span>${user.username}</span>`}, made on {user.createdAt.split('T')[0]}
-        </p>
-    {/each}
+    {#if !data.sessionUser}}<p><a href="/login">click</a> to login/register</p>{/if}
+    <p>we have <strong>{data.users.length}</strong> beautiful {data.users.length > 1 ? "users" : "user"}</p>
 </div>
 <div class="main">
     {#if form?.error || form?.success}<span>{form?.message}</span>{/if}
@@ -36,7 +29,7 @@
         </label>
         <button formaction="?/post">post</button>
     </form>
-    <div style=width:100%>
+    <div style="width:100%;height:fit-content">
     {#each posts as post}
         <Post post={post} replies={true}/>
     {/each}

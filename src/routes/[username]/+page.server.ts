@@ -145,7 +145,7 @@ export const actions = {
             const uploadPfp = await supabase
                 .storage
                 .from('pfps')
-                .upload(`${id}/${pfpFile.name.replaceAll(" ", "_")}`, pfpFile, {
+                .upload(`${id}/pfp.png`, pfpFile, {
                     upsert: true
                 });
             if (uploadPfp.error) return fail(500, { 
