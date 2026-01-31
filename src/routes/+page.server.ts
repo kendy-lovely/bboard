@@ -12,8 +12,6 @@ export const load = (async ({ locals: { supabase, safeGetSession } }) => {
         console.log(userData.error.message);
         return { users: [], posts: []};
     }
-    const users = userData.data.toSorted((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime());
-    const sessionUser = users.find(user => user.userID === session?.user.id);
     
     const postData = await supabase
         .from("posts")
@@ -22,6 +20,17 @@ export const load = (async ({ locals: { supabase, safeGetSession } }) => {
         console.log(postData.error.message);
         return { users: [], posts: []};
     }
+
+    const users = userData.data
+        .toSorted((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        .map((user) => {
+            const karma = postData.data
+                .filter(post => post.author === user?.userID)
+                .map(post => post.votes)
+                .reduce((acc, vote) => acc + vote, 0);
+            return { ...user, karma };
+        });
+    const sessionUser = users.find(user => user.userID === session?.user.id);
 
     const postMap = new Map<string, Post>();
 
@@ -34,7 +43,9 @@ export const load = (async ({ locals: { supabase, safeGetSession } }) => {
             text: post.text.slice(0, 255),
             pfp: user?.pfp,
             authorUsername: user?.username,
+            karma: user?.karma,
             deletable: session?.user.id === user?.userID || sessionUser?.admin,
+            voted: [sessionUser?.upvoted?.includes(post.id) ?? false, sessionUser?.downvoted?.includes(post.id) ?? false],
             children: []
         })
     }
@@ -119,7 +130,7 @@ export const actions = {
 
         return { success: true, message: "successfully posted"};
     },
-    delete: async ({ request, locals: { safeGetSession, supabase }}) => {
+    delete: async ({ request, locals: { safeGetSession, supabase } }) => {
         const { session } = await safeGetSession();
         const sessionUser = await supabase
             .from('users')
@@ -163,5 +174,79 @@ export const actions = {
         })
 
         return { success: true, message: "successfully deleted"};
+    },
+    vote: async ({ request, locals: { safeGetSession, supabase } }) => {
+        const { session } = await safeGetSession();
+        const form = await request.formData();
+        const id: number = Number(form.get('id') as string);
+
+        const getPost = await supabase
+            .from('posts')
+            .select('id, votes')
+            .eq('id', id)
+            .single();
+        if (getPost.error) return fail(500, {
+            error: true,
+            message: getPost.error.message
+        })
+
+        const getUser = await supabase
+            .from('users')
+            .select('userID, upvoted, downvoted')
+            .eq('userID', session?.user.id).
+            single();
+        if (getUser.error) return fail(500, {
+            error: true,
+            message: getUser.error.message
+        })
+
+        const vote = form.get('vote') as string;
+        let votes: number = getPost.data.votes;
+
+        const update: Record<string, number[]> = {};
+        if (vote === "upvote") {
+            if (!(getUser.data.upvoted?.includes(id) ?? false)) {
+                update.upvoted = [...getUser.data.upvoted ?? [], id];
+                votes++;
+            } else {
+                update.upvoted = (getUser.data as User).upvoted.filter((post) => post !== id);
+                votes--
+            }
+            if (getUser.data.downvoted?.includes(id) ?? false) {
+                update.downvoted = (getUser.data as User).downvoted.filter((post) => post !== id);
+                votes++;
+            }
+        } else {
+            if (!(getUser.data.downvoted?.includes(id) ?? false)) {
+                update.downvoted = [...getUser.data.downvoted ?? [], id];
+                votes--;
+            } else {
+                update.downvoted = (getUser.data as User).downvoted.filter((post) => post !== id);
+                votes++;
+            }
+            if (getUser.data.upvoted?.includes(id) ?? false) {
+                update.upvoted = (getUser.data as User).upvoted.filter((post) => post !== id);
+                votes--;
+            }
+        }
+
+        const changeVotes = await supabase
+            .from('posts')
+            .update({ votes })
+            .eq('id', id);
+        if (changeVotes.error) return fail(500, {
+            error: true, 
+            message: changeVotes.error.message
+        });
+
+        const addVoteToUser = await supabase
+            .from('users')
+            .update(update)
+            .eq('userID', session?.user.id)
+        if (addVoteToUser.error) return fail(500, {
+            error: true,
+            message: addVoteToUser.error.message
+        })
+        return { success: true, message: "vote counted !"}
     }
 } satisfies Actions;

@@ -67,6 +67,31 @@ nav {
 .link-style-button:hover {
     color: darkblue;
 }
+.post-top-bar {
+    display:grid;
+    grid-template-columns:1.15em+1fr;
+    grid-template-rows:repeat(2, 1fr);
+    width:fit-content;
+    height:fit-content;
+    column-gap:10px;
+    margin:8px 0 16px 0;
+}
+.vote {
+    grid-row:span+2/span+2;
+    display:grid;
+    grid-template-rows:1fr+2em+1fr;
+}
+.vote > span {
+    place-self: center;
+}
+.vote > button {
+    border:none;
+    scale:2.5;
+    color: grey;
+    place-self: center;
+    background-color: transparent;
+    cursor:pointer;
+}
 .post {
     display:flex;
     flex-direction: column;
@@ -99,21 +124,59 @@ nav {
     max-width:20%;
     max-height: 50%;
 }
+.profile-card {
+    width:fit-content;
+    height:fit-content;
+    grid-row:span+2/span+2;
+    align-self:center;
+}
+.pfplink, .pfplink:visited, .pfplink:hover, .pfplink:active, .pfplink:link {
+    color: inherit;
+    text-decoration: none;
+}
+.pfpbox {
+    display: grid;
+    grid-template-columns: 60px 20px;
+    grid-template-rows: 1fr 1.15em;
+    grid-column-gap: 20px;
+    grid-row-gap: 4px; 
+    width:108px;
+    height:81px;
+    text-align:center;
+    background: linear-gradient(136deg,rgba(204, 240, 252, 1) 0%, aliceblue  80%);
+    border-color: aliceblue;
+    border-bottom:ridge+4px;
+    border-right:ridge+4px;
+    padding:5px;
+    overflow:hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.pfpbox:active {
+    border:none;
+    padding-left:10px;
+    padding-top:10px;
+}
+.pfpbox > .pfp {
+    min-width:100%;
+    max-width: 50px;
+    grid-area: 1 / 1 / 2 / 2;
+}
+.pfpbox > .username {
+    grid-area: 2 / 1 / 3 / 2;
+    word-break: keep-all;
+}
+.pfpbox > .karma {
+    grid-row: span 2 / span 2;
+    place-self: center;
+}
 .pfp {
-    width:40px;
     display:inline-block;
     aspect-ratio:1;
     background-repeat:no-repeat;
     background-position:center;
     background-size:cover;
     border-radius:50%;
-}
-.pfpbox {
-    display:grid;
-    grid-template-rows: 1fr+1.15em;
-    width:fit-content;
-    text-align:center;
-    margin-top:8px;
 }
 @media screen and (max-width: 1024px) {
     .outer {

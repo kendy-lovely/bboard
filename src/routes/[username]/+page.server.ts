@@ -1,61 +1,91 @@
+import type { Post, User } from '$lib/types';
 import type { PageServerLoad, Actions } from './$types';
 import { fail } from '@sveltejs/kit';
 
 export const load = (async ({ params, locals: { supabase, safeGetSession } }) => {
     let ownPage = false;
     const { session } = await safeGetSession();
-
+    
     const userData = await supabase
-        .from('users')
-        .select()
-    if (userData.error) return { 
-        error: true, 
-        message: userData.error.message
-    };
-
-    const sessionUser = userData.data.find(user => user.userID === session?.user.id);
-    const pageUser = userData.data.find(user => user.username === params.username);
+        .from("users")
+        .select<'users', User>();
+    if (userData.error) {
+        console.log(userData.error.message);
+        return { users: [], posts: []};
+    }
+    
+    const postData = await supabase
+        .from("posts")
+        .select();
+    if (postData.error) {
+        console.log(postData.error.message);
+        return { users: [], posts: []};
+    }
+    const users = userData.data
+        .toSorted((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
+        .map((user) => {
+            const karma = postData.data
+                .filter(post => post.author === user?.userID)
+                .map(post => post.votes)
+                .reduce((acc, vote) => acc + vote, 0);
+            return { ...user, karma };
+        });
+    const sessionUser = users.find(user => user.userID === session?.user.id);
+    const pageUser = users.find(user => user.username === params.username);
     if (!pageUser) return {
         error: true,
         message: "user not found"
     };
-
-    const postData = await supabase
-        .from('posts')
-        .select()
-        .eq('author', pageUser?.userID);
-    if (postData.error) return { 
-        error: true, 
-        message: postData.error.message
-    };
-
-    const posts = postData.data
-        .map((post) => {
-            let readMore = "";
-            let deletable = false;
-
-            if (post.text.length >= 256) {
-                readMore = post.text;
-                post.text = post.text.slice(0, 255);
-            }
-            if (sessionUser?.userID === post.author || sessionUser?.admin) deletable = true;
-
-            return { 
-                ...post, 
-                readMore,
-                pfp: pageUser?.pfp,
-                authorUsername: pageUser?.username, 
-                deletable
-            };
-        })
-        .filter(p => p.authorUsername)
-        .toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-
     if (session?.user.id === pageUser?.userID) ownPage = true;
+
+    const postMap = new Map<string, Post>();
+
+    for (const post of postData.data) {
+        const user = users.find(user => user.userID === post.author);
+
+        postMap.set(`${post.id}`, {
+            ...post,
+            readMore: post.text.length >= 256 ? post.text : "",
+            text: post.text.slice(0, 255),
+            pfp: user?.pfp,
+            authorUsername: user?.username,
+            karma: user?.karma,
+            deletable: session?.user.id === user?.userID || sessionUser?.admin,
+            voted: [sessionUser?.upvoted?.includes(post.id) ?? false, sessionUser?.downvoted?.includes(post.id) ?? false],
+            children: []
+        })
+    }
+
+    let roots: Post[] = [];
+
+    for (const post of postMap.values()) {
+        if (post.parent) {
+            postMap.get(`${post.parent}`)?.children!.push(post)
+        }
+    }
+
+    for (const post of postMap.values()) {
+        if (!post.parent) {
+            roots.push(post);
+        }
+    }
+
+    const filterPostTree = (tree: Post[], condition: (post: Post) => boolean) => {
+        return tree
+            .filter(post => {
+                if (post.children && !condition(post)) post.children = filterPostTree(post.children, condition);
+
+                return condition(post) || (post.children && post.children.length > 0)
+            })
+    }
+
+    roots = filterPostTree(roots, (post) => post.author === pageUser.userID);
+
     return { 
-        pageUser, 
-        posts,
-        ownPage 
+        pageUser,
+        posts: roots.toReversed(),
+        sessionUser: sessionUser,
+        ownPage,
     };
 }) satisfies PageServerLoad;
 

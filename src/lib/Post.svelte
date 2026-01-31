@@ -1,20 +1,70 @@
 <script lang="ts">
+    import { enhance } from "$app/forms";
     import { setMarked, setRender } from "./marked";
     import Post from "./Post.svelte";
-    export let post;
-    export let replies;
+    import dfault from '$lib/assets/default.png';
+    let vote = $state("");
+    let { post, replies } = $props();
 </script>
 
 <div class="post">
     <div class="post-content">
-        <div class="pfpbox">
-            {#if post.pfp}
-            <a title={post.authorUsername} href="/{post.authorUsername}>"><div class="pfp" style="background-image:url({post.pfp});"></div></a>
-            {/if}
-            <a href="/{post.authorUsername}">{post.authorUsername}</a>
+        <div class="post-top-bar" >
+            <form class="vote" method="POST" action="?/vote" use:enhance={() => {
+                if (vote === "upvote") {
+                    if (!post.voted[0]) {
+                        post.voted[0] = true;
+                        post.votes++;
+                        post.karma++;
+                    } else {
+                        post.voted[0] = false;
+                        post.votes--;
+                        post.karma--;
+                    }
+                    if (post.voted[1]) {
+                        post.voted[1] = false;
+                        post.votes++;
+                        post.karma++;
+                    }
+                } else {
+                    if (!post.voted[1]) {
+                        post.voted[1] = true;
+                        post.votes--;
+                        post.karma--;
+                    } else {
+                        post.voted[1] =false;
+                        post.votes++;
+                        post.karma++;
+                    }
+                    if (post.voted[0]) {
+                        post.voted[0] = false;
+                        post.votes--;
+                        post.karma--;
+                    }
+                }
+            }}>
+                <input type="hidden" name="vote" value={vote}/>
+                <input type="hidden" name="id" value={post.id} />
+                <button style={post.voted[0] ? "color:red" : ""} onclick={() => vote = "upvote"}>🡅</button>
+                <span>{post.votes}</span>
+                <button style={post.voted[1] ? "color:red" : ""} onclick={() => vote = "downvote"}>🡇</button>
+            </form>
+            <div class="profile-card">
+                <a class="pfplink" title={post.authorUsername} href="/{post.authorUsername}">
+                    <div class="pfpbox">
+                        {#if post.pfp}
+                        <div class="pfp" style="background-image:url({post.pfp});"></div>
+                        {:else}
+                        <div class="pfp" style="background-image:url({dfault});"></div>
+                        {/if}
+                        <span class="username">{post.authorUsername}</span>
+                        <span class="karma">karma<br><strong>{post.karma}</strong></span>
+                    </div>
+                </a>
+            </div>
         </div>
         {#if post.img}
-        <img class="img" src={post.img}/>
+        <img class="img" alt={post.authorUsername} src={post.img}/>
         {/if}
         {@html post.expanded ? 
             setMarked.parse(post.readMore, { renderer: setRender }) : 

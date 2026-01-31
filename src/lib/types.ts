@@ -6,6 +6,9 @@ export type User = {
     admin: boolean;
     bio: string;
     pfp: string;
+    upvoted: number[];
+    downvoted: number[];
+    karma: number;
 };
 
 export type Post = {
@@ -20,4 +23,6 @@ export type Post = {
     replying: boolean;
     pfp: string;
     img: string;
+    votes: number;
+    voted: boolean[];
 }

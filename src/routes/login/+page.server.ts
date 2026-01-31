@@ -1,17 +1,16 @@
 import { fail } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
 import type { Actions } from './$types';
-
-
-export const load = (async () => {
-    return {};
-}) satisfies PageServerLoad;
 
 export const actions = {
 	login: async ({ request, locals: { supabase } }) => {
         const form = await request.formData();
         const email = form.get('email') as string;
         const password = form.get('password') as string;
+
+        if (!(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))) return fail(500, {
+            error: true,
+            message: "not valid email"
+        });
         
         const { error } = await supabase
             .auth
@@ -19,10 +18,11 @@ export const actions = {
                 email: email,
                 password: password
             })
-        if (error) return fail(500, { 
+        if (error) return { 
             error: true, 
-            message: error.message, email 
-        });
+            message: error.message, 
+            email 
+        };
 
         return { 
             success: true, 
