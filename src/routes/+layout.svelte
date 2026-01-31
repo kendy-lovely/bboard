@@ -27,11 +27,11 @@
 <div class="outer">
 	<nav>
 		<a href="/">home</a>
-		{#if userData.username}
+		{#if userData?.username}
 		<form method="POST" use:enhance={() => {
 				invalidate("supabase:auth");
 				return;
-			}}><p>hi <a href="/{userData.username}">{userData.username}</a> ! <button class="link-style-button" formaction="/logout">logout</button></p>
+			}}><p>hi <a href="/{userData?.username}">{userData?.username}</a> ! <button class="link-style-button" formaction="/logout">logout</button></p>
 		</form>
 		{#if form?.error}<p>{form?.message}</p>{/if}
 		{/if}
