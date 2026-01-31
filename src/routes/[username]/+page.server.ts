@@ -31,6 +31,7 @@ export const load = (async ({ params, locals: { supabase, safeGetSession} }) => 
             return { 
                 ...post, 
                 readMore,
+                pfp: pageUser?.pfp,
                 authorUsername: pageUser?.username, 
                 deletable
             };

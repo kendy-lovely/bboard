@@ -1,6 +1,7 @@
 <script lang="ts">
     import type { PageProps } from './$types';
     import { setMarked, setRender } from '$lib/marked';
+    import PostElement from '$lib/PostElement.svelte';
 
     let { data, form }: PageProps = $props();
     let editProfile = $state(false);
@@ -8,7 +9,8 @@
         // svelte-ignore state_referenced_locally
         data.posts?.map((post: any) => ({
             ...post,
-            expanded: false
+            expanded: false,
+            replying: false
         }))
     );
 </script>
@@ -23,7 +25,8 @@
                 background-image:url({data.pageUser.pfp});
                 background-repeat:no-repeat;
                 background-position:center;
-                background-size:cover;"></div>
+                background-size:cover;
+                border-radius: 50%"></div>
     {/if}
     {#if data.ownPage}<button class="link-style-button" onclick={() => (editProfile = !editProfile)}>edit profile</button>{/if}
     {#if data.ownPage && editProfile}
@@ -43,33 +46,8 @@
     {#if data.pageUser.bio}{@html setMarked.parse(data.pageUser.bio, { renderer: setRender })}{/if}
 </div>
 <div class="main">
+    <p>the beautiful posts by {data.pageUser.username}:</p>
     {#each posts as post}
-        <div class="post">
-            <a href="/{post.authorUsername}">{post.authorUsername}</a>: 
-            {@html post.expanded ? 
-            setMarked.parse(post.readMore, { renderer: setRender }) : 
-            setMarked.parse(post.text, { renderer: setRender })}
-            {#if post.readMore}
-                <button class="link-style-button" 
-                        onclick={() => (post.expanded = !post.expanded)}
-                >{post.expanded ? "read less" : "read more"}</button>
-            {/if}
-            <form method="POST">
-                <input type="hidden" name="id" value={post.id} />
-                <p>
-                    {new Date(post.createdAt)
-                        .toLocaleDateString('en-US', {year: 'numeric', month: 'long', day: 'numeric' })
-                        .toLowerCase()}, 
-                    {new Date(post.createdAt)
-                        .toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
-                    {#if post.deletable}
-                        <button style="margin-left:.5em;"
-                                class="link-style-button" 
-                                formaction="?/delete"
-                        >delete</button>
-                    {/if}
-                </p>
-            </form>
-        </div>
+        <PostElement post={post}/>
     {/each}
 </div>

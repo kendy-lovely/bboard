@@ -1,7 +1,16 @@
+.outer {
+    display:flex;
+    flex-direction:column;
+    height:50vh;
+    width:85vw;
+    margin:auto;
+    align-items: center;
+    margin-top:5vh;
+}
 .main {
     display:flex;
     flex-direction:column;
-    width:75vw;
+    width:100%;
     border:solid+1px;
     justify-content: center;
     align-items: center;
@@ -10,7 +19,6 @@
     padding-bottom:50px;
     background-color: rgb(219, 230, 241)
 }
-
 .logreg {
     display:grid;
     width:100%;
@@ -19,7 +27,7 @@
     place-items: center;
     column-gap:100px;
 }
-div form {
+.logreg form {
     display:flex;
     flex-direction:column;
     gap:10px;
@@ -28,16 +36,6 @@ div form {
 }
 form label {
     margin-left:auto;
-}
-.outer {
-    display:flex;
-    flex-direction:column;
-    height:50vh;
-    min-width:50%;
-    max-width:fit-content;
-    margin:auto;
-    align-items: center;
-    margin-top:5vh;
 }
 nav {
     display:flex;
@@ -61,39 +59,36 @@ nav {
     color: darkblue;
 }
 .post {
-    width:98%;
-    height:fit-content;
-    padding-right:2%;
+    display:flex;
+    flex-direction: column;
+    width:100%;
+    min-height:100px;
+    max-height:fit-content;
     padding-top: 15px;
     border-top:solid+0.5px;
     border-bottom:solid+0.5px;
+    border-bottom-color: transparent;
     background-color: rgb(229, 237, 244);
     text-align:left;
 }
-.post > p {
+.post > .post-content {
     margin-left:1em;
+    width:95%;
 }
-.post > a {
-    margin-left:1em;
-}
-.post > form {
-    margin-left:1em;
-}
-.post > button {
-    margin-left:1em;
-}
-.post .post {
-    width:100%;
+.post > .post {
+    width:99%;
+    margin-left:1%;
     height:fit-content;
-    border-top:dashed+0.5px;
-    background-color: aliceblue;
+    border-left:ridge+4px;
+    border-color:rgb(229, 237, 244);
+    background-color: transparent;
     padding-right:0;
     border-bottom:none;
     text-align:left;
 }
 @media screen and (max-width: 1024px) {
-    .main {
-        width: 95vw;
+    .outer {
+        width: 98vw;
     }
     .logreg {
         grid-auto-flow: column;
@@ -102,8 +97,5 @@ nav {
         place-items: center;
         column-gap:20px;
         row-gap: 100px;
-    }
-    .post {
-        width:95%;
     }
 }
