@@ -76,17 +76,17 @@ export const actions = {
         const { session } = await safeGetSession();
         const form = await request.formData();
         const text = form.get('text') as string;
-        const img = form.get('img');
+        const img: File = form.get('img') as File;
 
         const update: Record<string, string> = {};
         if (text) update.text = text;
-        if (img && img instanceof File) update.img = "img";
+        if (img?.size !== 0 && img instanceof File) update.img = "img";
         if (Object.keys(update).length === 0) return fail(500, { 
             error: true, 
             message: 'no data filled' 
         });
 
-        if (img && img instanceof File) {
+        if (img?.size !== 0 && img instanceof File) {
             const uploadImg = await supabase
                 .storage
                 .from('images')
