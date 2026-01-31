@@ -45,9 +45,9 @@
             }}>
                 <input type="hidden" name="vote" value={vote}/>
                 <input type="hidden" name="id" value={post.id} />
-                <button style={post.voted[0] ? "color:red" : ""} onclick={() => vote = "upvote"}>🡅</button>
+                <button style={post.voted[0] ? "color:red" : ""} onclick={() => vote = "upvote"}>&#9650;</button>
                 <span>{post.votes}</span>
-                <button style={post.voted[1] ? "color:red" : ""} onclick={() => vote = "downvote"}>🡇</button>
+                <button style={post.voted[1] ? "color:red" : ""} onclick={() => vote = "downvote"}>&#9660;</button>
             </form>
             <div class="profile-card">
                 <a class="pfplink" title={post.authorUsername} href="/{post.authorUsername}">
