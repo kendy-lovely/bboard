@@ -6,11 +6,6 @@ export const actions = {
         const form = await request.formData();
         const email = form.get('email') as string;
         const password = form.get('password') as string;
-
-        if (!(/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))) return fail(500, {
-            error: true,
-            message: "not valid email"
-        });
         
         const { error } = await supabase
             .auth
