@@ -16,7 +16,7 @@
 
 <div class="main">
     <h1>welcome to bboard</h1>
-    {#if !data.sessionUser}}<p><a href="/login">click</a> to login/register</p>{/if}
+    {#if !data.sessionUser}<p><a href="/login">click</a> to login/register</p>{/if}
     <p>we have <strong>{data.users.length}</strong> beautiful {data.users.length > 1 ? "users" : "user"}</p>
 </div>
 <div class="main">
