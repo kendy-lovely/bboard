@@ -1,9 +1,7 @@
 <script lang="ts">
     import "../style.css";
-    import type { PageProps } from './$types'
-    import { setMarked, setRender } from '$lib/marked';
-    import type { Post } from "$lib/types";
-	import PostElement from "$lib/PostElement.svelte";
+    import type { PageProps } from './$types';
+    import Post from "$lib/Post.svelte";
     const { data, form }: PageProps = $props();
     
     let posts = $state(
@@ -32,16 +30,17 @@
 </div>
 <div class="main">
     {#if form?.error || form?.success}<p>{form?.message}</p>{/if}
-    <form method="POST">
+    <form class="input-post" method="POST" enctype="multipart/form-data">
+        <textarea rows=4 name="text"></textarea>
         <label>
-            text:
-            <textarea style="width:100%" rows=4 name="text"></textarea>
+            image:
+            <input type="file" name="img"/>
         </label>
         <button formaction="?/post">post</button>
     </form>
     <div>
     {#each posts as post}
-        <PostElement post={post}/>
+        <Post post={post} replies={true}/>
     {/each}
     </div>
 </div>

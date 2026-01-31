@@ -1,21 +1,33 @@
 import type { PageServerLoad, Actions } from './$types';
+import { fail } from '@sveltejs/kit';
 
-export const load = (async ({ params, locals: { supabase, safeGetSession} }) => {
+export const load = (async ({ params, locals: { supabase, safeGetSession } }) => {
     let ownPage = false;
     const { session } = await safeGetSession();
 
     const userData = await supabase
         .from('users')
         .select()
-    if (userData.error) return { error: true, message: userData.error.message}
-    const pageUser = userData.data.find(user => user.username === params.username);
+    if (userData.error) return { 
+        error: true, 
+        message: userData.error.message
+    };
+
     const sessionUser = userData.data.find(user => user.userID === session?.user.id);
+    const pageUser = userData.data.find(user => user.username === params.username);
+    if (!pageUser) return {
+        error: true,
+        message: "user not found"
+    };
 
     const postData = await supabase
         .from('posts')
         .select()
         .eq('author', pageUser?.userID);
-    if (postData.error) return { error: true, message: postData.error.message}
+    if (postData.error) return { 
+        error: true, 
+        message: postData.error.message
+    };
 
     const posts = postData.data
         .map((post) => {
@@ -51,47 +63,90 @@ export const actions = {
     delete: async ({ request, locals: { safeGetSession, supabase }}) => {
         const { session } = await safeGetSession();
         const form = await request.formData();
+
         const sessionUser = await supabase
             .from('users')
             .select()
             .eq('userID', session?.user.id)
             .single();
+        if (sessionUser.error) return fail(500, { 
+            error: true, 
+            message: sessionUser.error.message 
+        });
+
         const post = await supabase
             .from('posts')
             .select()
             .eq('id', form.get('id') as string)
             .single();
+        if (post.error) return fail(500, { 
+            error: true, 
+            message: post.error.message
+        });
+        if (post.data.author !== session?.user.id && !sessionUser?.data.admin) return fail(500, { 
+            error: true, 
+            message: "not authenticated" 
+        });
 
-        if (post.error) return { error: true, message: post.error.message};
-        if (post.data.author !== session?.user.id && !sessionUser?.data.admin) { 
-            return { error: true, message: "not authenticated" } 
-        };
         const { error } = await supabase
                 .from('posts')
                 .delete()
                 .eq('id', post.data.id);
-        if (error) return { error: true, message: error.message};
+        if (error) return fail(500, { 
+            error: true, 
+            message: error.message
+        });
+
         return { success: true, message: "successfully deleted"};
     },
     edit: async ({request, locals: { supabase, safeGetSession}}) => {
         const { session } = await safeGetSession();
         const form = await request.formData();
+
         const id = form.get('id') as string;
         const bio = form.get('bio') as string;
-        const pfp = form.get('pfp') as string;
-
-        if (id !== session?.user.id) return { error: true, message: "not authenticated" }
+        const pfpFile = form.get('pfp');
 
         const update: Record<string, string> = {};
         if (bio) update.bio = bio;
-        if (pfp) update.pfp = pfp;
-        if (Object.keys(update).length === 0) return { error: true, message: 'no data filled' };
+        if (pfpFile && pfpFile instanceof File) update.pfp = "pfp";
+        if (Object.keys(update).length === 0) return fail(500, { 
+            error: true, 
+            message: 'no data filled' 
+        });
 
-        const { error } = await supabase
+        if (pfpFile && pfpFile instanceof File) {
+            const uploadPfp = await supabase
+                .storage
+                .from('pfps')
+                .upload(`${id}/${pfpFile.name.replaceAll(" ", "_")}`, pfpFile, {
+                    upsert: true
+                });
+            if (uploadPfp.error) return fail(500, { 
+                error: true, 
+                message: uploadPfp.error.message 
+            });
+
+            const { data: { publicUrl }} = supabase
+                .storage
+                .from('pfps')
+                .getPublicUrl(`${id}/pfp.png`);
+            update.pfp = publicUrl;
+        }
+
+        if (id !== session?.user.id) return fail(500, { 
+            error: true, 
+            message: "not authenticated" 
+        });
+
+        const updateProfile = await supabase
             .from('users')
             .update(update)
             .eq('userID', id);
-        if (error) return { error: true, message: error.message };
+        if (updateProfile.error) return fail(500, { 
+            error: true, 
+            message: updateProfile.error.message 
+        });
 
         return { success: true, message: "successfully changed !"};
     },

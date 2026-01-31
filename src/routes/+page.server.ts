@@ -1,5 +1,6 @@
 import type { PageServerLoad, Actions } from './$types';
 import type { User, Post } from '$lib/types';
+import { fail } from '@sveltejs/kit';
 
 export const load = (async ({ locals: { supabase, safeGetSession } }) => {
     const { session } = await safeGetSession();
@@ -64,12 +65,40 @@ export const actions = {
         const { session } = await safeGetSession();
         const form = await request.formData();
         const text = form.get('text') as string;
+        const img = form.get('img');
+
+        const update: Record<string, string> = {};
+        if (text) update.text = text;
+        if (img && img instanceof File) update.img = "img";
+        if (Object.keys(update).length === 0) return fail(500, { 
+            error: true, 
+            message: 'no data filled' 
+        });
+
+        if (img && img instanceof File) {
+            const uploadImg = await supabase
+                .storage
+                .from('images')
+                .upload(`${session?.user.id}/${img.name.replaceAll(" ", "_")}`, img);
+            if (uploadImg.error) return fail(500, { 
+                error: true, 
+                message: uploadImg.error.message 
+            });
+
+            const { data: { publicUrl }} = supabase
+                .storage
+                .from('images')
+                .getPublicUrl(`${session?.user.id}/${img.name.replaceAll(" ", "_")}`);
+            update.img = publicUrl;
+        }
 
         const { error } = await supabase
             .from('posts')
-            .insert([{ author: session?.user.id, text }]);
-
-        if (error) return { error: true, message: error.message};
+            .insert([{ author: session?.user.id, ...update }]);
+        if (error) return fail(500, { 
+            error: true, 
+            message: error.message
+        });
 
         return { success: true, message: "successfully posted"};
     },
@@ -83,33 +112,56 @@ export const actions = {
             .from('posts')
             .insert([{ author: session?.user.id, text, parent }]);
 
-        if (error) return { error: true, message: error.message};
+        if (error) return fail(500, { 
+            error: true, 
+            message: error.message
+        });
 
         return { success: true, message: "successfully posted"};
     },
     delete: async ({ request, locals: { safeGetSession, supabase }}) => {
         const { session } = await safeGetSession();
-        const form = await request.formData();
         const sessionUser = await supabase
             .from('users')
             .select()
             .eq('userID', session?.user.id)
             .single();
+
+        const form = await request.formData();
+
         const post = await supabase
             .from('posts')
             .select()
             .eq('id', form.get('id') as string)
             .single();
+        if (post.error) return fail(500, { 
+            error: true, 
+            message: post.error.message 
+        });
+        if (post.data.author !== session?.user.id && !sessionUser?.data.admin) return fail(500, { 
+            error: true, 
+            message: "not authenticated" 
+        });
 
-        if (post.error) return { error: true, message: post.error.message };
-        if (post.data.author !== session?.user.id && !sessionUser?.data.admin) { 
-            return { error: true, message: "not authenticated" } 
-        };
-        const { error } = await supabase
+        const deletePost = await supabase
                 .from('posts')
                 .delete()
                 .eq('id', post.data.id);
-        if (error) return { error: true, message: error.message};
+        if (deletePost.error) return fail(500, { 
+            error: true, 
+            message: deletePost.error.message
+        });
+
+        const imagePath = post.data.img.split('images/')[1];
+        const deleteImg = await supabase
+            .storage
+            .from('images')
+            .remove([imagePath])
+        if (deleteImg.error) return fail(500, { 
+            error: true, 
+            message: deleteImg.error.message 
+        })
+
         return { success: true, message: "successfully deleted"};
     }
 } satisfies Actions;

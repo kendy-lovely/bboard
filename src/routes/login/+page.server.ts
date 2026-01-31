@@ -1,3 +1,4 @@
+import { fail } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import type { Actions } from './$types';
 
@@ -18,9 +19,15 @@ export const actions = {
                 email: email,
                 password: password
             })
+        if (error) return fail(500, { 
+            error: true, 
+            message: error.message, email 
+        });
 
-        if (error) return { error: true, message: error.message, email }
-        return { success: true, message: "sucessfully logged in !"}
+        return { 
+            success: true, 
+            message: "sucessfully logged in !"
+        }
 	},
     register: async ({ request, locals: { supabase } }) => {
         const form = await request.formData();
@@ -28,7 +35,7 @@ export const actions = {
         const email = form.get('email') as string;
         const password = form.get('password') as string;
 
-        const { data, error } = await supabase
+        const signUp = await supabase
             .auth
             .signUp({
                 email: email,
@@ -39,18 +46,24 @@ export const actions = {
                     }
                 }
             })
-        if (!error) {
-            const userID = data.user?.id;
-            const { error } = await supabase
-                .from('users')
-                .insert([{ 
-                    userID,
-                    username, 
-                    email
-                }]);
-            if (error) return { error: true, message: error?.message };
-            return { success: true, message: "successfully registered" };
-        }
-        return { error: true, message: error?.message }
+        if (signUp.error) return fail(500, { 
+            error: true, 
+            message: signUp.error.message 
+        });
+
+        const userID = signUp.data.user?.id;
+        const registerUser = await supabase
+            .from('users')
+            .insert([{ 
+                userID,
+                username, 
+                email
+            }]);
+        if (registerUser.error) return fail(500, { 
+            error: true, 
+            message: registerUser.error?.message 
+        });
+
+        return { success: true, message: "successfully registered" };
     }
 } satisfies Actions;

@@ -1,24 +1,21 @@
 <script lang="ts">
     import { setMarked, setRender } from "./marked";
-    import PostElement from "./PostElement.svelte";
+    import Post from "./Post.svelte";
     export let post;
+    export let replies;
 </script>
 
 <div class="post">
     <div class="post-content">
-        <a href="/{post.authorUsername}">
+        <div class="pfpbox">
             {#if post.pfp}
-            <div style="width:40px;
-                        display:inline-block;
-                        aspect-ratio:1;
-                        background-image:url({post.pfp});
-                        background-repeat:no-repeat;
-                        background-position:center;
-                        background-size:cover;
-                        border-radius:50%"></div>
+            <a title={post.authorUsername} href="/{post.authorUsername}>"><div class="pfp" style="background-image:url({post.pfp});"></div></a>
             {/if}
-            {post.authorUsername}
-        </a>
+            <a href="/{post.authorUsername}">{post.authorUsername}</a>
+        </div>
+        {#if post.img}
+        <img class="img" src={post.img}/>
+        {/if}
         {@html post.expanded ? 
             setMarked.parse(post.readMore, { renderer: setRender }) : 
             setMarked.parse(post.text, { renderer: setRender })}
@@ -41,11 +38,13 @@
                             formaction="?/delete"
                     >delete</button>
                 {/if}
+                {#if replies}
                 <button style="margin-left:.5em;"
                         class="link-style-button" 
                         type="button"
                         onclick={() => post.replying = !post.replying}
                 >reply</button>
+                {/if}
                 {#if post.replying}
                     <textarea style="width:100%" rows=4 name="text"></textarea>
                     <button formaction="?/reply">post</button>
@@ -54,6 +53,6 @@
         </form>
     </div>
     {#each post.children as reply}
-        <PostElement post={reply}/>
+        <Post post={reply} replies={replies}/>
     {/each}
 </div>
