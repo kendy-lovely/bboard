@@ -36,7 +36,7 @@
         </label>
         <button formaction="?/post">post</button>
     </form>
-    <div>
+    <div style=width:100%>
     {#each posts as post}
         <Post post={post} replies={true}/>
     {/each}

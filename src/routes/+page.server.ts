@@ -93,7 +93,7 @@ export const actions = {
                 .upload(`${session?.user.id}/${img.name.replaceAll(" ", "_")}`, img);
             if (uploadImg.error) return fail(500, { 
                 error: true, 
-                message: uploadImg.error.message 
+                message: uploadImg.error.message + " IMAGE FAIL"
             });
 
             const { data: { publicUrl }} = supabase
@@ -108,7 +108,7 @@ export const actions = {
             .insert([{ author: session?.user.id, ...update }]);
         if (error) return fail(500, { 
             error: true, 
-            message: error.message
+            message: error.message + " POSTING FAIL"
         });
 
         return { success: true, message: "successfully posted"};

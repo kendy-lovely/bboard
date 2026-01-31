@@ -51,8 +51,7 @@ export const actions = {
             .from('users')
             .insert([{ 
                 userID,
-                username, 
-                email
+                username
             }]);
         if (registerUser.error) return fail(500, { 
             error: true, 
