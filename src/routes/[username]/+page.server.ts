@@ -131,17 +131,17 @@ export const actions = {
 
         const id = form.get('id') as string;
         const bio = form.get('bio') as string;
-        const pfpFile = form.get('pfp');
+        const pfpFile = form.get('pfp') as File;
 
         const update: Record<string, string> = {};
         if (bio) update.bio = bio;
-        if (pfpFile && pfpFile instanceof File) update.pfp = "pfp";
+        if (pfpFile?.size !== 0 && pfpFile instanceof File) update.pfp = "pfp";
         if (Object.keys(update).length === 0) return fail(500, { 
             error: true, 
             message: 'no data filled' 
         });
 
-        if (pfpFile && pfpFile instanceof File) {
+        if (pfpFile?.size !== 0 && pfpFile instanceof File) {
             const uploadPfp = await supabase
                 .storage
                 .from('pfps')
