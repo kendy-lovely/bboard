@@ -79,7 +79,7 @@ export const load = (async ({ params, locals: { supabase, safeGetSession } }) =>
 
     return { 
         pageUser,
-        posts: roots.toReversed(),
+        posts: roots.toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
         sessionUser: sessionUser,
         ownPage,
     };
