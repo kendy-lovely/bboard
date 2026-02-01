@@ -119,7 +119,7 @@ export const actions = {
                 .storage
                 .from('pfps')
                 .getPublicUrl(`${id}/pfp.png`);
-            update.pfp = publicUrl;
+            update.pfp = `${publicUrl}?v=${crypto.randomUUID()}`;
         }
 
         if (id !== session?.user.id) return fail(500, { 

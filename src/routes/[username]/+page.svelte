@@ -17,23 +17,33 @@
     {#if data.pageUser?.pfp}
     <div class="pfp" style="width:150px;background-image:url({data.pageUser?.pfp})"></div>
     {/if}
-    {#if data.pageUser?.bio}{@html setMarked.parse(data.pageUser?.bio, { renderer: setRender })}{/if}
+    {#if data.pageUser?.bio}
+    <div class="bio">
+        {@html setMarked.parse(data.pageUser?.bio, { renderer: setRender })}
+    </div>
+    {/if}
     <strong>karma: {data.pageUser?.karma}</strong>
     {#if data.ownPage}
         <button class="link-style-button" style="margin-top:16px;" onclick={() => (editProfile = !editProfile)}>edit profile</button>
         {#if editProfile}
-            <form method="POST" enctype=multipart/form-data use:enhance={() => {
+            <form method="POST" enctype=multipart/form-data use:enhance={({ formElement}) => {
+                document.body.classList.add('waiting');
                 return async ({ result }) => {
+                    document.body.classList.remove('waiting');
                     if (result.type === 'success') {
                         validation = "successfully updated !";
-                        invalidate('supabase:users');
+                        formElement.reset()
+                        editProfile = !editProfile
+                        await invalidate('supabase:users');
+                    } else if (result.type === 'failure') {
+                        validation = `${result.data?.message}`
                     }
                 }
             }}>
                 <input type="hidden" name="id" value={data.pageUser?.userID} />
                 <label>
                     bio:
-                    <textarea style="width:100%" rows=4 name="bio"></textarea>
+                    <textarea style="width:100%" value={data.pageUser?.bio} rows=4 name="bio"></textarea>
                 </label>
                 <label>
                     pfp:

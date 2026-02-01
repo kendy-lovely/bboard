@@ -4,7 +4,6 @@
     import Post from "./Post.svelte";
     import dfault from '$lib/assets/default.png';
     import { invalidate } from "$app/navigation";
-	import { onMount } from "svelte";
 
     let validation = $state('');
     let vote = $state("");

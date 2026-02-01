@@ -7,7 +7,7 @@
 
 <div class="main">
     <div class="logreg">
-        {#if form?.error || form?.success}<span class="validation">{form?.message}</span>{/if}
+        {#if form?.error || form?.success}<p class="validation">{form?.message}</p>{/if}
         <form class="login" method="POST" use:enhance>
             <label>
                 email:

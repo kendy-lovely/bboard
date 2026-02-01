@@ -188,6 +188,13 @@ nav {
     background-size:cover;
     border-radius:50%;
 }
+.bio {
+    display:grid;
+    grid-template-columns: 1fr;
+    grid-auto-rows: 1.15em;
+    gap:2em;
+    margin:0+0+3em+0;
+}
 .validation {
     color: purple;
     animation-name: disappear;
