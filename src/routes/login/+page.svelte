@@ -7,8 +7,8 @@
 
 <div class="main">
     <div class="logreg">
-        {#if form?.error || form?.success}<p class="validation" style="grid-column:span+2/span+2;place-self:center;">{form?.message}</p>{/if}
-        <form method="POST" use:enhance>
+        {#if form?.error || form?.success}<span class="validation">{form?.message}</span>{/if}
+        <form class="login" method="POST" use:enhance>
             <label>
                 email:
                 <input name="email" type="email" value={form?.email ?? ''}>
@@ -19,7 +19,7 @@
             </label>
             <button formaction="?/login">log in</button>
         </form>
-        <form method="POST" use:enhance>
+        <form class="register" method="POST" use:enhance>
             <label>
                 username:
                 <input name="username" type="username">

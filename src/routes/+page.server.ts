@@ -60,6 +60,10 @@ export const load = (async ({ locals: { supabase, safeGetSession }, depends }) =
             roots.push(post);
         }
     }
+    roots.map((root) => ({
+        ...root,
+        children: root.children.toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    }))
 
     return { 
         users,

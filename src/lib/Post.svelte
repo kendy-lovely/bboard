@@ -17,18 +17,15 @@
     $effect(() => {
         post = props.post;
         children = props.post.children;
-    });
-    onMount(() => {
         validation = '';
-    })
-
-    let deleted = $state(false);
+    });
 </script>
 
-<div class="post {deleted ? "post-deleted" : ""}">
+<div class="post">
     <div class="post-content">
         <div class="post-top-bar" >
             <form class="vote" method="POST" action="/post?/vote" use:enhance={({ formData }) => {
+                document.body.classList.add('waiting');
                 let cancel = false;
                 if (vote === "upvote") {
                     if (!post.voted[0]) {
@@ -64,6 +61,7 @@
                     }
                 }
                 return async ({ result }) => {
+                    document.body.classList.remove('waiting');
                     if (result.type === 'success') {
                         const vote = formData.get('vote') as string;
                         validation = cancel ? `you have cancelled your ${vote} on this post` :`you have ${vote}d this post`
@@ -115,10 +113,11 @@
                 .toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}
         </span>
         <form style="display:inline;" method="POST" use:enhance={() => {
+            document.body.classList.add('waiting');
             return async ({ result }) => { 
+                document.body.classList.remove('waiting');
                 if (result.type === 'success') {
                     validation = 'you have deleted this post';
-                    deleted = true;
                     props.onDelete();
                 } else if (result.type === 'failure') {
                     validation = `failed with status ${result.status}`;
@@ -138,7 +137,9 @@
             {/if}
         </form>
         <form style="display:inline;" method=POST use:enhance={({ formElement }) => {
+            document.body.classList.add('waiting');
             return async ({ result }) => {
+                document.body.classList.remove('waiting');
                 if (result.type === 'success') {
                     validation = 'replied !';
                     formElement.reset();

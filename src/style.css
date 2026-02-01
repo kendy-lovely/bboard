@@ -1,3 +1,6 @@
+body.waiting * {
+  cursor: wait !important; 
+}
 .outer {
     display:flex;
     flex-direction:column;
@@ -34,6 +37,10 @@
     gap:10px;
     justify-self: center;
     align-self: center;
+}
+.logreg.validation {
+    grid-column:span+2/span+2;
+    place-self:center;
 }
 .input-post {
     display:flex;
@@ -187,11 +194,6 @@ nav {
     animation-duration: 2s;
     animation-fill-mode: forwards;
 }
-.post.post-deleted {
-    opacity: 0;
-    visibility: hidden;
-    transform: translateX(300px);
-}
 @keyframes disappear {
     from { 
         opacity: 1;
@@ -209,15 +211,27 @@ nav {
         width: 98vw;
     }
     .logreg {
-        grid-auto-flow: column;
-        grid-template-rows:1fr+1fr;
+        grid-template-rows:1fr+1em+1fr;
         grid-template-columns: 1fr;
-        place-items: center;
-        column-gap:20px;
-        row-gap: 100px;
+        row-gap: 30px;
+    }
+    .logreg .login{
+        grid-row-start: 1;
+        grid-row-end: 2;
+        place-self: center;
+    }
+    .logreg .register {
+        grid-row-start: 3;
+        grid-row-end: 4;
+        place-self: center;
+    }
+    .logreg.validation {
+        grid-column:1/2;
+        grid-row-start: 2;
+        grid-row-end: 3;
     }
     .post > .post-content {
-        width:75%;
+        width:85%;
     }
     .img {
         max-width: 80%;

@@ -5,6 +5,8 @@
 	import { enhance } from "$app/forms";
 	import { invalidate } from "$app/navigation";
 	import { onMount } from "svelte";
+	import { fade } from "svelte/transition";
+	import { flip } from "svelte/animate";
 
     const { data, form }: PageProps = $props();
     let validation = $state('');
@@ -26,12 +28,15 @@
 <div class="main">
     {#if validation}<span class="validation">{validation}</span>{/if}
     <form class="input-post" method="POST" enctype="multipart/form-data" use:enhance={({ formElement, formData }) => {
+        document.body.classList.add('waiting');
         return async ({ result }) => {
+            document.body.classList.remove('waiting');
+            validation = 'posting..';
             if (result.type === 'success') {
-                validation = 'posting..';
+                validation = `posted '${formData.get('text')?.slice(0, 32)}...'!`;
                 formElement.reset();
             } else if (result.type === 'failure') {
-                validation = `${result.status}`;
+                validation = `${result.data?.message}`;
             }
             await Promise.all([
                 invalidate('supabase:posts'),
@@ -48,13 +53,15 @@
     </form>
     <div style="width:100%;height:fit-content">
     {#each posts as post (post.id)}
-        <Post 
-            post={post} 
-            replies={true}
-            onDelete={async () => {
-                await new Promise(r => setTimeout(r, 2000));
-                posts = posts.filter(p => p.id !== post.id);
-            }}/>
+        <div animate:flip transition:fade>
+            <Post 
+                post={post} 
+                replies={true}
+                onDelete={async () => {
+                    await new Promise(r => setTimeout(r, 500));
+                    posts = posts.filter(p => p.id !== post.id);
+                }}/>
+        </div>
     {/each}
     </div>
 </div>
