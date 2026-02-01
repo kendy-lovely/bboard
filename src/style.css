@@ -23,12 +23,13 @@
     display:grid;
     width:100%;
     grid-template-columns:1fr+1fr;
-    grid-template-rows: 1fr+0.2fr;
+    grid-template-rows: 0.2fr+1fr;
     place-items: center;
     column-gap:100px;
 }
 .logreg form {
     display:flex;
+    grid-row-start: 2;
     flex-direction:column;
     gap:10px;
     justify-self: center;
@@ -104,6 +105,7 @@ nav {
     background-color: rgb(229, 237, 244);
     text-align:left;
     word-break: break-all;
+    transition: opacity 2s ease-out, visibility 2s, transform 2s, linear 2s;
 }
 .post > .post-content {
     margin-left:0.5em;
@@ -178,6 +180,29 @@ nav {
     background-position:center;
     background-size:cover;
     border-radius:50%;
+}
+.validation {
+    color: purple;
+    animation-name: disappear;
+    animation-duration: 2s;
+    animation-fill-mode: forwards;
+}
+.post.post-deleted {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateX(300px);
+}
+@keyframes disappear {
+    from { 
+        opacity: 1;
+    }
+    to { 
+        opacity: 0;
+        max-height: 0;
+        padding: 0;
+        margin-bottom:0;
+        display:none;
+    }
 }
 @media screen and (max-width: 800px) {
     .outer {

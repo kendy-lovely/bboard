@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
     import type { PageProps } from './$types';
 
     let { data, form }: PageProps = $props();
@@ -6,7 +7,8 @@
 
 <div class="main">
     <div class="logreg">
-        <form method="POST">
+        {#if form?.error || form?.success}<p class="validation" style="grid-column:span+2/span+2;place-self:center;">{form?.message}</p>{/if}
+        <form method="POST" use:enhance>
             <label>
                 email:
                 <input name="email" type="email" value={form?.email ?? ''}>
@@ -17,7 +19,7 @@
             </label>
             <button formaction="?/login">log in</button>
         </form>
-        <form method="POST">
+        <form method="POST" use:enhance>
             <label>
                 username:
                 <input name="username" type="username">
@@ -32,7 +34,5 @@
             </label>
             <button formaction="?/register">register</button>
         </form>
-        {#if form?.error}<p>{form?.message}</p>{/if}
-        {#if form?.success}<p>{form?.message}</p>{/if}
     </div>
 </div>

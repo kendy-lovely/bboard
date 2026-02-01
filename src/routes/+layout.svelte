@@ -1,13 +1,12 @@
 <script lang="ts">
 	import '../style.css';
 	import favicon from '$lib/assets/favicon.svg';
-	import type { Snippet } from 'svelte';
-	import type { ActionData, PageData } from './$types'
-	import { invalidate } from '$app/navigation';
+	import { goto, invalidate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { enhance } from '$app/forms';
+	import { page } from '$app/state';
 
-	let { children, data, form }: { children: Snippet, data: PageData, form: ActionData } = $props();
+	let { children, data } = $props();
 	let { supabase, session, userData } = $derived(data);
 	
 	onMount(() => {
@@ -27,14 +26,19 @@
 <div class="outer">
 	<nav>
 		<a href="/">home</a>
-		{#if userData?.username}
+		{#if session && data.validation !== 'logout'}
 		<form method="POST" use:enhance={() => {
-				invalidate("supabase:auth");
-				return;
+				return async ({ result }) => {
+					if (result.type === 'success') {
+						await invalidate('supabase:auth');
+						await goto(`${page.url.pathname}/?validation=logout&user=${userData?.username}`, { invalidate: ['supabase:auth'] });
+					}
+				};
 			}}><p>hi <a href="/{userData?.username}">{userData?.username}</a> ! <button class="link-style-button" formaction="/logout">logout</button></p>
 		</form>
-		{#if form?.error}<p>{form?.message}</p>{/if}
 		{/if}
+		{#if data.validation === 'logout' && data.username}<p class="validation">you have successfully logged out of {data.username}</p>{/if}
 	</nav>
+	<hr>
 	{@render children()}
 </div>

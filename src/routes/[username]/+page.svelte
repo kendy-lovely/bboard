@@ -2,21 +2,16 @@
     import type { PageProps } from './$types';
     import { setMarked, setRender } from '$lib/marked';
     import Post from '$lib/Post.svelte';
+	import { enhance } from '$app/forms';
+	import { invalidate } from '$app/navigation';
 
+    let validation = $state('');
     let { data, form }: PageProps = $props();
     let editProfile = $state(false);
-    let posts = $state(
-        // svelte-ignore state_referenced_locally
-        data.posts?.map((post: any) => ({
-            ...post,
-            expanded: false,
-            replying: false
-        }))
-    );
 </script>
 
 <div class="main">
-    {#if data?.error}<p>{data?.message}</p>{/if}
+    {#if validation}<p class="validation">{validation}</p>{/if}
     {#if form?.error || form?.success}<p>{form.message}</p>{/if}
     <p>this is the page of {data.pageUser?.username} !!</p>
     {#if data.pageUser?.pfp}
@@ -27,7 +22,14 @@
     {#if data.ownPage}
         <button class="link-style-button" style="margin-top:16px;" onclick={() => (editProfile = !editProfile)}>edit profile</button>
         {#if editProfile}
-            <form method="POST" enctype=multipart/form-data>
+            <form method="POST" enctype=multipart/form-data use:enhance={() => {
+                return async ({ result }) => {
+                    if (result.type === 'success') {
+                        validation = "successfully updated !";
+                        invalidate('supabase:users');
+                    }
+                }
+            }}>
                 <input type="hidden" name="id" value={data.pageUser?.userID} />
                 <label>
                     bio:
@@ -44,7 +46,7 @@
 </div>
 <div class="main">
     <p>the beautiful posts by {data.pageUser?.username}:</p>
-    {#each posts as post}
-        <Post post={post} replies={false}/>
+    {#each data.posts as post}
+        <Post post={post} replies={true}/>
     {/each}
 </div>

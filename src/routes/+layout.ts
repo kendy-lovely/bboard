@@ -3,8 +3,10 @@ import { PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY, PUBLIC_SUPABASE_URL } from '$e
 import type { LayoutLoad } from './$types'
 import { createBrowserClient, createServerClient, isBrowser } from '@supabase/ssr'
 
-export const load: LayoutLoad = async ({ fetch, depends, data }) => {
+export const load: LayoutLoad = async ({ url, fetch, depends, data }) => {
   depends('supabase:auth')
+  const validation = url.searchParams.get('validation');
+  const username = url.searchParams.get('user');
 
   const supabase = isBrowser()
     ? createBrowserClient(PUBLIC_SUPABASE_URL, PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY, {
@@ -24,5 +26,11 @@ export const load: LayoutLoad = async ({ fetch, depends, data }) => {
       })
   const { data: { session } } = await supabase.auth.getSession()
 
-  return { supabase, session, userData: data.userData }
+  return { 
+    supabase,
+    session, 
+    userData: data.userData, 
+    validation,
+    username
+  }
 }

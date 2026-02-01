@@ -19,8 +19,6 @@ export type Post = {
     createdAt: string;
     parent: number;
     children: Post[];
-    expanded: boolean;
-    replying: boolean;
     pfp: string;
     img: string;
     votes: number;
