@@ -131,7 +131,8 @@ nav {
     text-align:left;
 }
 .img {
-    max-height: 40%;
+    max-width:35%;
+    max-height: 50%;
 }
 .profile-card {
     width:fit-content;
@@ -246,6 +247,7 @@ blockquote {
         width:85%;
     }
     .img {
+        max-width: 80%;
         max-height: 100%;
     }
 }
