@@ -7,6 +7,7 @@
 
     let validation = $state('');
     let { data, form }: PageProps = $props();
+    let session = $derived(data.session);
     let editProfile = $state(false);
 </script>
 
@@ -57,6 +58,6 @@
 <div class="main">
     <p>the beautiful posts by {data.pageUser?.username}:</p>
     {#each data.posts as post}
-        <Post post={post} replies={true} card={true}/>
+        <Post post={post} replies={true} card={session ? true : false}/>
     {/each}
 </div>
