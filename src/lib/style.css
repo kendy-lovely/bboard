@@ -131,8 +131,8 @@ nav {
     text-align:left;
 }
 .img {
-    max-width:20%;
-    max-height: 50%;
+    height: 40%;
+    max-width:50%;
 }
 .profile-card {
     width:fit-content;
