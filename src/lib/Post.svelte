@@ -23,6 +23,7 @@
 <div class="post">
     <div class="post-content">
         <div class="post-top-bar" >
+        {#if props.card}
             <form class="vote" method="POST" action="/post?/vote" use:enhance={({ formData }) => {
                 document.body.classList.add('waiting');
                 let cancel = false;
@@ -77,6 +78,7 @@
                 <span>{post.votes}</span>
                 <button style={post.voted[1] ? "color:red" : ""} onclick={() => vote = "downvote"}>&#9660;</button>
             </form>
+        {/if}
             <div class="profile-card">
                 <a class="pfplink" title={post.authorUsername} href="/{post.authorUsername}">
                     <div class="pfpbox">

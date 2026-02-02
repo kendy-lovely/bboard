@@ -8,10 +8,12 @@ export const actions = {
         const form = await request.formData();
         const text = form.get('text') as string;
         const img: File = form.get('img') as File;
+        const subspace = form.get('subspace') as string;
 
         const update: Record<string, string> = {};
         if (text) update.text = text;
         if (img?.size !== 0 && img instanceof File) update.img = "img";
+        if (subspace) update.channel = subspace;
         if (Object.keys(update).length === 0) return fail(500, { 
             error: true, 
             message: 'no data filled' 

@@ -23,4 +23,5 @@ export type Post = {
     img: string;
     votes: number;
     voted: boolean[];
+    channel: string;
 }

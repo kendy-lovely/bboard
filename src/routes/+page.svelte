@@ -1,66 +1,40 @@
 <script lang="ts">
-    import "../style.css";
-    import type { PageProps } from './$types';
-    import Post from "$lib/Post.svelte";
-	import { enhance } from "$app/forms";
-	import { invalidate } from "$app/navigation";
-	import { onMount } from "svelte";
-	import { fade } from "svelte/transition";
-	import { flip } from "svelte/animate";
+	import Post from "$lib/Post.svelte";
+    import "$lib/style.css";
+	import type { User } from "$lib/types.js";
 
-    const { data, form }: PageProps = $props();
+    const { data } = $props();
+    const users = $derived(data.users);
+    const subspaces = $derived(data.subspaces);
+    let { session } = $derived(data);
     let validation = $state('');
-    // svelte-ignore state_referenced_locally
-    let posts = $state(data.posts);
-    $effect(() => {
-        posts = data.posts;
-    });
-    onMount(() => {
-        validation = '';
-    })
 </script>
 
 <div class="main">
-    <h1>welcome to bboard</h1>
-    {#if !data.sessionUser}<p><a href="/login">click</a> to login/register</p>{/if}
-    <p>we have <strong>{data.users.length}</strong> beautiful {data.users.length > 1 ? "users" : "user"}</p>
+    <h1>welcome to b-space !</h1>
+    {#if !session}<p><a href="/login">click</a> to login/register</p>{/if}
+    <p>we have <strong>{users?.length ?? 0}</strong> beautiful {users?.length ?? 0 > 1 ? "users" : "user"}</p>
 </div>
 <div class="main">
-    {#if validation}<span class="validation">{validation}</span>{/if}
-    <form class="input-post" method="POST" enctype="multipart/form-data" use:enhance={({ formElement, formData }) => {
-        document.body.classList.add('waiting');
-        return async ({ result }) => {
-            document.body.classList.remove('waiting');
-            validation = 'posting..';
-            if (result.type === 'success') {
-                validation = `posted '${formData.get('text')?.slice(0, 32)}...'!`;
-                formElement.reset();
-            } else if (result.type === 'failure') {
-                validation = `${result.data?.message}`;
-            }
-            await Promise.all([
-                invalidate('supabase:posts'),
-                invalidate('supabase:users')
-            ]);
-        }
-    }}>
-        <textarea rows=4 name="text"></textarea>
-        <label>
-            image:
-            <input type="file" name="img"/>
-        </label>
-        <button formaction="/post?/post">post</button>
-    </form>
-    <div style="width:100%;height:fit-content">
-    {#each posts as post (post.id)}
-        <div animate:flip transition:fade>
-            <Post 
-                post={post} 
-                replies={true}
-                onDelete={async () => {
-                    await new Promise(r => setTimeout(r, 500));
-                    posts = posts.filter(p => p.id !== post.id);
-                }}/>
+    <div style="width:100%;height:fit-content;grid-auto-rows:minmax(300px, fit-content);">
+    {#each subspaces as subspace (subspace.id)}
+        <div style="display:grid;height:fit-content;width:80%;grid-template-columns:0.3fr+1fr;margin:auto;gap:10px;background:blue;padding:10px;">
+            <div style="display:grid;width:100%;height:100%;grid-columns:1/2;background-color:aliceblue;place-self:center;text-align:center;">
+                <a style="place-self:center;" href="/post/{subspace.name}">
+                    <h1>#{subspace.name}</h1>
+                    <small>{subspace.description}</small>
+                </a>
+            </div>  
+            <div style="width:100%;grid-columns:2/3;background-color:aliceblue;place-self:center;">
+                <h2>{subspace.postCount == 0 ? 
+                    "there are no posts !" : 
+                    `there ${subspace.postCount > 1 ? `are ${subspace.postCount} posts` : 'is one post'} ! the most recent one is:`}</h2>
+                {#if subspace?.lastPost}
+                <Post post={subspace.lastPost} replying={false} card={false}/>
+                {:else}
+                <h1>be the first one to post !</h1>
+                {/if}
+            </div>
         </div>
     {/each}
     </div>
