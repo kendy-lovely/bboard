@@ -58,6 +58,7 @@
             <Post 
                 post={post} 
                 replies={true}
+                card={true}
                 onDelete={async () => {
                     await new Promise(r => setTimeout(r, 500));
                     posts = posts.filter((p: any) => p.id !== post.id);

@@ -18,7 +18,7 @@
 <div class="main">
     <div style="width:100%;height:fit-content;grid-auto-rows:minmax(300px, fit-content);">
     {#each subspaces as subspace (subspace.id)}
-        <div style="display:grid;height:fit-content;width:80%;grid-template-columns:0.3fr+1fr;margin:auto;gap:10px;background:blue;padding:10px;">
+        <div style="display:grid;height:fit-content;width:80%;grid-template-columns:0.3fr+1fr;margin:auto;gap:5px;padding:5px;background-color:rgb(180, 180, 243)">
             <div style="display:grid;width:100%;height:100%;grid-columns:1/2;background-color:aliceblue;place-self:center;text-align:center;">
                 <a style="place-self:center;" href="/post/{subspace.name}">
                     <h1>#{subspace.name}</h1>
