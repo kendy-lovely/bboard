@@ -3,16 +3,20 @@
     import { setMarked, setRender } from "$lib/marked";
     import Post from "./Post.svelte";
     import dfault from '$lib/assets/default.png';
-    import { invalidate } from "$app/navigation";
+    import { invalidate, invalidateAll } from "$app/navigation";
+	import { page } from "$app/state";
+    const nestLimit = 3;
 
     let validation = $state('');
     let vote = $state("");
     let replying = $state(false);
     let expanded = $state(false);
+    let expandNest = $state(false);
     
     let props = $props();
     let post = $state(props.post);
     let children = $state(props.post.children);
+    let nest = $derived(props.nest ?? 0);
     $effect(() => {
         post = props.post;
         children = props.post.children;
@@ -20,7 +24,11 @@
     });
 </script>
 
-<div class="post">
+{#if nest !== nestLimit || expandNest}
+<div class="post" id={post.id}>
+    {#if nest === nestLimit}
+        <button style="display:inline;margin:.5em+0+.5em+0;" class="link-style-button" onclick={() => expandNest = !expandNest}>contract thread</button>
+    {/if}
     <div class="post-content">
         <div class="post-top-bar" >
         {#if props.card}
@@ -165,6 +173,11 @@
                 <button formaction="/post?/reply">post</button>
             {/if}
         </form>
+        <button style="display:inline;margin-left:.5em;" class="link-style-button" onclick={async () => {
+            navigator.clipboard.writeText(`${page.url.href}?id=${post.id}`);
+            validation = 'link copied !';
+            await invalidate('supabase:posts');
+        }}>copy link</button>
         <br><br>
     </div>
     {#each children as reply (reply.id)}
@@ -174,6 +187,10 @@
             onDelete={async () => {
                 await new Promise(r => setTimeout(r, 2000));
                 children = children.filter((child: any) => child.id !== reply.id);
-            }}/>
+            }}
+            nest={nest + 1}/>
     {/each}
 </div>
+{:else} 
+<button style="display:inline;margin:.5em+0+.5em+0;" class="link-style-button" onclick={() => expandNest = !expandNest}>expand thread</button>
+{/if}

@@ -5,6 +5,8 @@
 	import { invalidate } from "$app/navigation";
 	import { fade } from "svelte/transition";
 	import { flip } from "svelte/animate";
+	import { onMount } from 'svelte';
+    import { page } from '$app/state';
 
     const { data }: PageProps = $props();
     let { session, subspace } = $derived(data);
@@ -15,6 +17,18 @@
         posts = data.posts;
         validation = '';
     });
+    onMount(async () => {
+        const id = page.url.searchParams.get('id') as string;
+        if (id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' })
+                element.classList.add('glow');
+                await new Promise(r => setTimeout(r, 3000))
+                element.classList.remove('glow');
+            }
+        };
+    })
 </script>
 
 <div class="main">

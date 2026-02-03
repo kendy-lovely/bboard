@@ -57,7 +57,7 @@
 </div>
 <div class="main">
     <p>the beautiful posts by {data.pageUser?.username}:</p>
-    {#each data.posts as post}
+    {#each data.posts as post (post.id)}
         <Post post={post} replies={true} card={session ? true : false}/>
     {/each}
 </div>
