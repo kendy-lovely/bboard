@@ -32,7 +32,7 @@
 				return async ({ result }) => {
 					document.body.classList.remove('waiting');
 					if (result.type === 'success') {
-						goto(`${page.url.pathname}/?validation=logout&user=${userData?.username}`, { invalidate: ['supabase:auth'] });
+						goto(`${page.url.href}?validation=logout&user=${userData?.username}`, { invalidate: ['supabase:auth'] });
 					}
 				};
 			}}><p>hi <a href="/{userData?.username}">{userData?.username}</a> ! <button class="link-style-button" formaction="/logout">logout</button></p>
