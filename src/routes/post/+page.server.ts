@@ -20,13 +20,12 @@ export const actions = {
             error: true, 
             message: 'no data filled' 
         });
-        console.log(update);
 
         if (img?.size !== 0 && img instanceof File) {
             const uploadImg = await supabase
                 .storage
                 .from('images')
-                .upload(`${session?.user.id}/${img.name.replaceAll(" ", "_")}`, img);
+                .upload(`${session?.user.id}/${img.name.replaceAll(" ", "_")}`, img, { upsert: true });
             if (uploadImg.error) return fail(500, { 
                 error: true, 
                 message: uploadImg.error.message + " IMAGE FAIL"
