@@ -107,8 +107,8 @@
         <img class="img" alt={post.authorUsername} src={post.img}/>
         {/if}
         {@html expanded ? 
-            setMarked.parse(post.readMore, { renderer: setRender }) : 
-            setMarked.parse(post.text, { renderer: setRender })}
+            setMarked.parse(post?.readMore ?? "", { renderer: setRender }) : 
+            setMarked.parse(post?.text ?? "", { renderer: setRender })}
         {#if post.readMore}
             <button class="link-style-button" 
                     onclick={() => expanded = !expanded}
