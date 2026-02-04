@@ -170,7 +170,10 @@
                         onclick={() => replying = !replying}
                 >reply</button>
             {/if}
-            <button style="display:inline;margin-left:.5em;" class="link-style-button" type="button" onclick={async () => {
+            <button style="margin-left:.5em;" 
+                    class="link-style-button" 
+                    type="button" 
+                    onclick={async () => {
                 navigator.clipboard.writeText(`${page.url.href}?id=${post.id}`);
                 validation = 'link copied !';
                 await invalidate('supabase:posts');

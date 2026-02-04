@@ -30,7 +30,11 @@
                     "there are no posts !" : 
                     `there ${subspace.postCount > 1 ? `are ${subspace.postCount} posts` : 'is one post'} ! the most recent one is:`}</h2>
                 {#if subspace?.lastPost}
-                <Post post={subspace.lastPost} replying={false} card={false}/>
+                <Post 
+                    post={subspace.lastPost} 
+                    replying={false} 
+                    card={false}
+                    subspace={subspace}/>
                 {:else}
                 <h1>be the first one to post !</h1>
                 {/if}
