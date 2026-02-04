@@ -9,15 +9,18 @@ export const actions = {
         const text = form.get('text') as string;
         const img: File = form.get('img') as File;
         const subspace = form.get('subspace') as string;
+        const parent = form.get('id') as string;
 
         const update: Record<string, string> = {};
         if (text) update.text = text;
         if (img?.size !== 0 && img instanceof File) update.img = "img";
         if (subspace) update.channel = subspace;
+        if (parent) update.parent = parent;
         if (Object.keys(update).length === 0) return fail(500, { 
             error: true, 
             message: 'no data filled' 
         });
+        console.log(update);
 
         if (img?.size !== 0 && img instanceof File) {
             const uploadImg = await supabase
@@ -42,23 +45,6 @@ export const actions = {
         if (error) return fail(500, { 
             error: true, 
             message: error.message + " POSTING FAIL"
-        });
-
-        return { success: true, message: "successfully posted"};
-    },
-    reply: async ({ request, locals: { safeGetSession, supabase }}) => {
-        const { session } = await safeGetSession();
-        const form = await request.formData();
-        const text = form.get('text') as string;
-        const parent = form.get('id') as string;
-
-        const { error } = await supabase
-            .from('posts')
-            .insert([{ author: session?.user.id, text, parent }]);
-
-        if (error) return fail(500, { 
-            error: true, 
-            message: error.message
         });
 
         return { success: true, message: "successfully posted"};

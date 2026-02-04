@@ -34,7 +34,7 @@
 <div class="main">
     <h1>#{subspace?.name}</h1>
     <small>created by {subspace?.creator}</small>
-    <p></p>
+    <br><br>
     <p>it has {subspace?.postCount == 0 ? "no posts" : (subspace?.postCount as number) > 1 ? `${subspace?.postCount} posts` : `${subspace?.postCount} post`} !</p>
 </div>
 <div class="main">
@@ -76,7 +76,8 @@
                 onDelete={async () => {
                     await new Promise(r => setTimeout(r, 500));
                     posts = posts.filter((p: any) => p.id !== post.id);
-                }}/>
+                }}
+                subspace={subspace}/>
         </div>
     {/each}
     </div>

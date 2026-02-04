@@ -16,6 +16,7 @@
     let props = $props();
     let post = $state(props.post);
     let children = $state(props.post.children);
+    let subspace = $derived(props.subspace);
     let nest = $derived(props.nest ?? 0);
     $effect(() => {
         post = props.post;
@@ -145,7 +146,7 @@
                 >delete</button>
             {/if}
         </form>
-        <form style="display:inline;" method=POST use:enhance={({ formElement }) => {
+        <form style="display:inline;" method=POST enctype="multipart/form-data" use:enhance={({ formElement }) => {
             document.body.classList.add('waiting');
             return async ({ result }) => {
                 document.body.classList.remove('waiting');
@@ -161,23 +162,29 @@
             }
         }}>
             <input type="hidden" name="id" value={post.id} />
+            <input type="hidden" name="subspace" value={subspace.name}>
             {#if props.replies}
-            <button style="margin-left:.5em;"
-                    class="link-style-button" 
-                    type="button"
-                    onclick={() => replying = !replying}
-            >reply</button>
+                <button style="margin-left:.5em;"
+                        class="link-style-button" 
+                        type="button"
+                        onclick={() => replying = !replying}
+                >reply</button>
             {/if}
+            <button style="display:inline;margin-left:.5em;" class="link-style-button" type="button" onclick={async () => {
+                navigator.clipboard.writeText(`${page.url.href}?id=${post.id}`);
+                validation = 'link copied !';
+                await invalidate('supabase:posts');
+            }}>copy link</button>
             {#if replying}
                 <textarea style="width:100%" rows=4 name="text"></textarea>
-                <button formaction="/post?/reply">post</button>
+                <label>
+                    image:
+                    <input type="file" name="img"/>
+                </label>
+                <br>
+                <button formaction="/post?/post">reply</button>
             {/if}
         </form>
-        <button style="display:inline;margin-left:.5em;" class="link-style-button" onclick={async () => {
-            navigator.clipboard.writeText(`${page.url.href}?id=${post.id}`);
-            validation = 'link copied !';
-            await invalidate('supabase:posts');
-        }}>copy link</button>
         <br><br>
     </div>
     {#each children as reply (reply.id)}
@@ -188,7 +195,9 @@
                 await new Promise(r => setTimeout(r, 2000));
                 children = children.filter((child: any) => child.id !== reply.id);
             }}
-            nest={nest + 1}/>
+            card={props.card ?? true}
+            nest={nest + 1}
+            subspace={subspace}/>
     {/each}
 </div>
 {:else} 
