@@ -72,12 +72,11 @@
             <Post 
                 post={post} 
                 replies={true}
-                card={session ? true : false}
+                voteCard={!!session}
                 onDelete={async () => {
-                    await new Promise(r => setTimeout(r, 500));
+                    await new Promise(r => setTimeout(r, 2000));
                     posts = posts.filter((p: any) => p.id !== post.id);
-                }}
-                subspace={subspace}/>
+                }}/>
         </div>
     {/each}
     </div>

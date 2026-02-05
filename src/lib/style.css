@@ -87,7 +87,7 @@ nav {
 .vote {
     grid-row:span+2/span+2;
     display:grid;
-    grid-template-rows:1fr+2em+1fr;
+    grid-template-rows:1fr+1em+1fr;
 }
 .vote > span {
     place-self: center;

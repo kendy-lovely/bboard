@@ -76,11 +76,17 @@ export const load = (async ({ params, depends, locals: { supabase, safeGetSessio
                 return condition(post) || (post.children && post.children.length > 0)
             })
     }
-    roots = filterPostTree(roots, (post) => post.author === pageUser.userID);
+    roots = filterPostTree(roots, (post) => post.author === pageUser.userID)
+        .toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .map((root) => ({
+            ...root,
+            children: root.children.toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        }))
 
     return { 
         pageUser,
-        posts: roots.toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()),
+        posts: roots,
+        pagePosts: roots.filter(p => p.channel === pageUser.username),
         sessionUser: sessionUser,
         ownPage,
     };

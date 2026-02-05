@@ -1,9 +1,20 @@
 import type { PageServerLoad } from './$types';
 import type { Post, User } from '$lib/types';
+import { redirect } from '@sveltejs/kit';
 
 export const load = (async ({ depends, params, locals: { supabase, safeGetSession } }) => {
     depends('supabase:posts', 'supabase:users');
     const { session } = await safeGetSession();
+
+    const getUsers = await supabase
+        .from("users")
+        .select<'users', User>();
+    if (getUsers.error) {
+        console.log(getUsers.error.message);
+        return { users: [], posts: []};
+    }
+    const possibleUserChannel = getUsers.data.find(user => params.subspace === user.username);
+    if (possibleUserChannel) throw redirect(303, `/${possibleUserChannel.username}`);
 
     const getPosts = await supabase
         .from('posts')
@@ -28,13 +39,6 @@ export const load = (async ({ depends, params, locals: { supabase, safeGetSessio
         postCount: getPosts.data.length
     }
 
-    const getUsers = await supabase
-        .from("users")
-        .select<'users', User>();
-    if (getUsers.error) {
-        console.log(getUsers.error.message);
-        return { users: [], posts: []};
-    }
     const users = getUsers.data
         .toSorted((a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
         .map((user) => {
@@ -63,7 +67,7 @@ export const load = (async ({ depends, params, locals: { supabase, safeGetSessio
             children: []
         })
     }
-    const roots: Post[] = [];
+    let roots: Post[] = [];
     for (const post of postMap.values()) {
         if (post.parent) {
             postMap.get(`${post.parent}`)?.children!.push(post)
@@ -74,12 +78,13 @@ export const load = (async ({ depends, params, locals: { supabase, safeGetSessio
             roots.push(post);
         }
     }
-    roots
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    roots = roots
+        .toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .map((root) => ({
             ...root,
             children: root.children.toSorted((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         }))
+
     return {
         posts: roots,
         subspace: subspace

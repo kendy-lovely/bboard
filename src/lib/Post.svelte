@@ -3,7 +3,7 @@
     import { setMarked, setRender } from "$lib/marked";
     import Post from "./Post.svelte";
     import dfault from '$lib/assets/default.png';
-    import { invalidate, invalidateAll } from "$app/navigation";
+    import { invalidate } from "$app/navigation";
 	import { page } from "$app/state";
     const nestLimit = 3;
 
@@ -14,10 +14,8 @@
     let expandNest = $state(false);
     
     let props = $props();
-    let post = $state(props.post);
-    let children = $state(props.post.children);
-    let subspace = $derived(props.subspace);
-    let nest = $derived(props.nest ?? 0);
+    let { post, post: { children = [] } } = $state(props);
+    let { voteCard = true, replies = true, showSubspace = false, nest = 0 } = $derived(props);
     $effect(() => {
         post = props.post;
         children = props.post.children;
@@ -31,8 +29,12 @@
         <button style="display:inline;margin:.5em+0+.5em+0;" class="link-style-button" onclick={() => expandNest = !expandNest}>contract thread</button>
     {/if}
     <div class="post-content">
+        {#if showSubspace}
+            <strong>in <a href="/post/{post.channel}">#{post.channel}</a></strong>
+            <br>
+        {/if}
         <div class="post-top-bar" >
-        {#if props.card}
+        {#if voteCard}
             <form class="vote" method="POST" action="/post?/vote" use:enhance={({ formData }) => {
                 document.body.classList.add('waiting');
                 let cancel = false;
@@ -103,18 +105,18 @@
             </div>
         </div>
         {#if validation}<div class="validation">{validation}</div>{/if}
-        {#if post.img}
-        <img class="img" alt={post.authorUsername} src={post.img}/>
-        {/if}
+        {#if post.img}<img class="img" alt={post.authorUsername} src={post.img}/>{/if}
         {@html expanded ? 
-            setMarked.parse(post?.readMore ?? "", { renderer: setRender }) : 
-            setMarked.parse(post?.text ?? "", { renderer: setRender })}
+            setMarked.parse(post?.readMore, { renderer: setRender }) : 
+            setMarked.parse(post?.text, { renderer: setRender })}
+        {#if !post.text}<br>{/if}
         {#if post.readMore}
             <button class="link-style-button" 
                     onclick={() => expanded = !expanded}
             >{expanded ? "read less" : "read more"}</button>
-            <br><br>
+            <br>
         {/if}
+        <br>
         <span>
             {new Date(post.createdAt)
                 .toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -146,6 +148,14 @@
                 >delete</button>
             {/if}
         </form>
+        <button style="margin-left:.5em;" 
+                class="link-style-button" 
+                type="button" 
+                onclick={async () => {
+            navigator.clipboard.writeText(`${page.url.href}?id=${post.id}`);
+            validation = 'link copied !';
+            await invalidate('supabase:posts');
+        }}>copy link</button>
         <form style="display:inline;" method=POST enctype="multipart/form-data" use:enhance={({ formElement }) => {
             document.body.classList.add('waiting');
             return async ({ result }) => {
@@ -162,7 +172,7 @@
             }
         }}>
             <input type="hidden" name="id" value={post.id} />
-            <input type="hidden" name="subspace" value={subspace.name}>
+            <input type="hidden" name="subspace" value={post.channel}>
             {#if props.replies}
                 <button style="margin-left:.5em;"
                         class="link-style-button" 
@@ -170,14 +180,6 @@
                         onclick={() => replying = !replying}
                 >reply</button>
             {/if}
-            <button style="margin-left:.5em;" 
-                    class="link-style-button" 
-                    type="button" 
-                    onclick={async () => {
-                navigator.clipboard.writeText(`${page.url.href}?id=${post.id}`);
-                validation = 'link copied !';
-                await invalidate('supabase:posts');
-            }}>copy link</button>
             {#if replying}
                 <textarea style="width:100%" rows=4 name="text"></textarea>
                 <label>
@@ -193,14 +195,13 @@
     {#each children as reply (reply.id)}
         <Post 
             post={reply} 
-            replies={props.replies} 
+            replies={replies} 
             onDelete={async () => {
                 await new Promise(r => setTimeout(r, 2000));
                 children = children.filter((child: any) => child.id !== reply.id);
             }}
-            card={props.card ?? true}
-            nest={nest + 1}
-            subspace={subspace}/>
+            voteCard={voteCard}
+            nest={nest + 1}/>
     {/each}
 </div>
 {:else} 

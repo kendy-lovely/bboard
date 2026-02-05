@@ -4,10 +4,9 @@
 	import type { User } from "$lib/types.js";
 
     const { data } = $props();
-    const users = $derived(data.users);
+    const users: User[] | undefined = $derived(data.users);
     const subspaces = $derived(data.subspaces);
     let { session } = $derived(data);
-    let validation = $state('');
 </script>
 
 <div class="main">
@@ -33,8 +32,7 @@
                 <Post 
                     post={subspace.lastPost} 
                     replying={false} 
-                    card={false}
-                    subspace={subspace}/>
+                    voteCard={false}/>
                 {:else}
                 <h1>be the first one to post !</h1>
                 {/if}
